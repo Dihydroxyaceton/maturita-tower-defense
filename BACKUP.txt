@@ -1,0 +1,31 @@
+class GameMap():		 # TODO: structure, array
+	def drawMap(self, surface):
+		self.levelMap=[]
+		self.levelMap.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+		self.levelMap.append([1,0,0,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1])
+		self.levelMap.append([1,0,0,1,0,0,1,0,1,0,0,1,1,1,1,1,1,1,0,1])
+		self.levelMap.append([2,0,0,1,0,0,0,0,0,0,0,1,1,1,0,0,1,1,0,1])
+		self.levelMap.append([1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1])
+		self.levelMap.append([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1])
+		self.levelMap.append([1,1,1,0,0,1,1,1,1,1,1,1,0,0,1,1,1,0,0,1])
+		self.levelMap.append([1,1,1,0,0,1,1,1,1,1,1,1,0,0,1,1,0,0,1,1])
+		self.levelMap.append([1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1])
+		self.levelMap.append([1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1])
+		self.levelMap.append([1,1,1,0,0,1,1,1,1,0,1,0,0,0,1,1,1,1,1,1])
+		self.levelMap.append([1,0,0,0,0,0,1,1,0,0,1,0,0,0,0,1,1,1,1,1])
+		self.levelMap.append([1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1])
+		self.levelMap.append([1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1])
+		self.levelMap.append([1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,1])
+		self.levelMap.append([1,0,0,0,0,0,0,1,1,1,1,1,0,0,1,1,1,1,0,1])
+		self.levelMap.append([1,1,1,0,0,0,1,1,1,1,1,1,0,0,1,1,1,1,0,1])
+		self.levelMap.append([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1])
+		self.levelMap.append([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1])
+		self.levelMap.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+		for x in range(20):
+			for y in range(20):
+				if (self.levelMap[x][y]==1):
+					pygame.draw.rect(surface, (0, 0, 128), (y*30, x*30, 30, 30))
+				elif (self.levelMap[x][y]==2):
+					pygame.draw.rect(surface, (0, 255, 0), (y*30, x*30, 30, 30))
+				else:
+					pygame.draw.rect(surface, (0, 128, 0), (y*30, x*30, 30, 30))
