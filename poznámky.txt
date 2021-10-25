@@ -1,0 +1,17 @@
+TOWER DEFENSE V PYGAME
+
+
+
+
+TODO
+udělat soubory ve složce s mapami
+	v nich arrays
+		0 = prázdné pole, není možné nic umístit
+		1 = cesta
+		2 = pole k umístění věže (typ ground)
+		3 = pole k umístění věže (typ řeka)
+	+obrázky v png
+jedno pole 20x20 nebo 30x30 px
+
+pathfinding
+	nepřátele chodí pouze po 1 (a pokud tam není bariéra)
