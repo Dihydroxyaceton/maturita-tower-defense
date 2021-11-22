@@ -23,11 +23,28 @@ classes:
     methodes: dealing damage
 """
 
+# loading images for enemies:
+# TODO: asi move to enemy class?
+enemy_type3 = pygame.image.load('enemies/kubelwagen_right.png')
+enemy_type3_d = pygame.image.load('enemies/kubelwagen_d_right.png')
+
+
+
+
+
+
+
+
+
+
 class Enemy(pygame.sprite.Sprite):
-	def __init__(self, pos_x, pos_y, width, height, color, health): #TODO: movement speed, type
-		super().__init__()
-		self.image = pygame.Surface([width, height])
-		self.image.fill(color)
+	def __init__(self, pos_x, pos_y, width, height, color, health, image): #TODO: movement speed, type
+		#super().__init__()
+		
+		pygame.enemy.Enemy.__init__(self, pos_x, pos_x, pos_y, width, height, color, health, image) #https://stackoverflow.com/questions/13851051/how-to-use-sprite-groups-in-pygame
+		
+		
+		self.image = image
 		self.rect = self.image.get_rect()
 		self.rect.center = [pos_x, pos_y]
 		
@@ -47,12 +64,26 @@ class Enemy(pygame.sprite.Sprite):
 		if key[pygame.K_DOWN]:
 			self.rect.move_ip(0, 1)
            
+	def spawn(self): # spawn
+		enemy_group = pygame.sprite.Group()
+		enemy_group.add(enemy)
+		
+		#enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
+		
+		
 		
 	def drawEnemy(self, surface): # draw enemy
 		pygame.draw.rect(surface, (0, 0, 0), self.rect)
 
 	def update(self):
 		self.move()
+
+
+
+
+
+
+
 
 
 class Turret(pygame.sprite.Sprite):
@@ -63,8 +94,27 @@ class Turret(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = [pos_x, pos_y]
 		self.delay_counter = 0
+		
+	def drawMemory(self, surface):
+		"""creates the memory to remember whether a turret can be placed or not"""
+		# 0 = vacant place; 1 = occupied (either by a turret or a cliff)
+		self.levelMap=[]
+		self.levelMap.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+		self.levelMap.append([1,0,1,1,1,0,0,1,1,1,1,1,1,1,1])
+		self.levelMap.append([1,1,1,0,1,1,0,1,1,0,0,0,0,0,1])
+		self.levelMap.append([1,1,0,0,0,1,0,1,1,0,1,1,1,0,1])
+		self.levelMap.append([1,1,1,0,0,1,0,1,1,0,1,0,1,0,1])
+		self.levelMap.append([1,0,0,0,1,1,0,1,0,0,1,0,1,0,1])
+		self.levelMap.append([1,0,1,1,1,0,0,0,0,0,1,0,1,0,1])
+		self.levelMap.append([1,0,1,0,0,0,0,0,0,0,1,0,1,0,1])
+		self.levelMap.append([1,0,1,1,1,1,1,0,0,1,1,0,1,0,1])
+		self.levelMap.append([1,0,0,0,0,0,1,1,1,1,0,0,1,0,1])
+		self.levelMap.append([1,1,0,0,1,0,1,0,1,1,0,0,1,1,1])
+		self.levelMap.append([1,1,1,1,1,1,1,0,0,1,0,0,0,0,1])
+		self.levelMap.append([1,1,1,1,1,0,1,1,1,1,0,0,1,1,1])
+		self.levelMap.append([1,1,1,1,1,0,0,0,0,0,0,1,1,1,1])
+		self.levelMap.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
 
-		"""
 	def update(self):
 		self.fire() #TODO: different settings (closest, strongest)
 		
@@ -72,6 +122,21 @@ class Turret(pygame.sprite.Sprite):
 		for i in range(50): #TODO: replace 50 with "fire_delay": every x pygame cycles, the turret fires
 			self.delay_counter+=1
 		self.delay_counter = 0
+		
+	def spawn(self):	# TODO: make it work idk
+		turret_group = pygame.sprite.Group()
+		#turret_group.add(turret)
+		
+		#turret = Turret(420, 400, 20, 20, (255, 0, 255))
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
 
 class Bullet(pygame.sprite.Sprite):
@@ -81,35 +146,50 @@ class Bullet(pygame.sprite.Sprite):
 		self.image.fill(color)
 		self.rect = self.image.get_rect()
 		self.rect.center = [pos_x, pos_y]
+		self.fire_delay = 0 # výchozí hodnota
 
 	def update(self):
 		#detecting collision with a bullet
 		if enemy.rect.colliderect(self.rect):
 			enemy.kill() # TODO: damage, not kill
-		self.pew()
+		self.fire_delay += 1
+		if self.fire_delay == 20:
+			self.fire()
+			self.fire_delay = 0
 	
-	def pew(self): #TODO: rename
-		for i in range(50): #TODO: replace 50 with "fire_delay": every x pygame cycles, the turret fires
-			self.delay_counter+=1
-		self.delay_counter = 0
+	def fire(self):	
+		bullet_group = pygame.sprite.Group()
+		#bullet_group.add(bullet)
+		#bullet = Bullet(420, 400, 5, 5, (255, 0, 0))
 
-		for i in range(50): #TODO: replace "20" with bullet_life = how long the bullet will fly before despawning
+
+
+		for i in range(20): #ŽIVOT STŘELY || TODO: replace "20" with bullet_life = how long the bullet will fly before despawning
 			self.rect.move_ip(1, 0)
-		#self.kill()
+		self.kill()
 
-		"""
+
+
+
+
+
+
+
+
+
 
 
 class GameMap():
 	def __init__(self):
 		self.current_health = 100	# current health
 		self.maximum_health = 100	# maximum health
+		self.current_money = 0 # money
 		self.health_bar_length = 180
 		self.health_ratio = self.maximum_health / self.health_bar_length # for optimal health bar appearence
 		self.end_hitbox = pygame.Rect(570, 400, 30, 40) # hitbox for obtaining damage
 		
 		
-	def drawMap(self, surface):  # TODO: structure, array, multiple levels
+	def drawMap(self, surface):  # TODO: structure, multiple levels
 		"""draws the map"""
 		self.levelMap=[]
 		self.levelMap.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
@@ -136,9 +216,9 @@ class GameMap():
 				elif (self.levelMap[x][y]==3): # finish
 					pygame.draw.rect(surface, (255, 0, 0), (y*40, x*40, 40, 40))
 				elif (self.levelMap[x][y]==4): # tiles for placing turrets
-					pygame.draw.rect(surface, (128, 128, 128), (y*40, x*40, 40, 40))	
+					pygame.draw.rect(surface, (139, 105, 20), (y*40, x*40, 40, 40))	
 				elif (self.levelMap[x][y]==0): # road
-					pygame.draw.rect(surface, (234, 234, 160), (y*40, x*40, 40, 40))
+					pygame.draw.rect(surface, (0, 128, 0), (y*40, x*40, 40, 40))
 			
 			
 	def detectDamage(self):		# TODO: add "amount" (damage system - different enemy types)
@@ -155,6 +235,15 @@ class GameMap():
 		if self.current_health <=0:
 			self.current_health = 0 # TODO: end of game
 	
+	def getMoney(self, amount):
+		"""adding money"""
+		self.current_money += amount
+		
+	def spendMoney(self, amount):
+		"""subtracting money"""		# TODO: protection against going below 0
+		if self.current_money > 0: 
+			self.current_money -= amount
+
 	# HEALING: to be implemented?
 	"""
 	def getHealth(self, amount):
@@ -164,6 +253,11 @@ class GameMap():
 			self.current_health = self.maximum_health
 	"""
 
+	def moneyIndicator(self):	
+		"""shows money available; for money, the player can purchase towers"""
+		myfont = pygame.font.SysFont("calibri", 20)
+		self.current_money_label = myfont.render(str(self.current_money)+'$', 1, (0, 0, 0)) # TODO: make prettier
+		surface.blit(self.current_money_label, (690 , 25))
 
 	def healthBar(self):	
 		"""health bar of the 'castle': damaged when an enemy reaches the end of the map"""
@@ -174,12 +268,21 @@ class GameMap():
 		surface.blit(self.current_health_label, (670 , 55))
 
 	def update(self):
+		self.moneyIndicator()
 		self.healthBar()
 		self.detectDamage()
 		#self.showDeveloperStuff()
 
 	def showDeveloperStuff(self):
 		pygame.draw.rect(surface, (255, 154, 0), self.end_hitbox) #HITBOX END
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -193,22 +296,7 @@ pygame.display.set_caption("soon to be TOWER DEFENSE") # window name
 
 
 
-enemy = Enemy(20, 100, 20, 20, (0, 0, 0), 100)
 
-enemy_group = pygame.sprite.Group()
-enemy_group.add(enemy)
-
-
-turret = Turret(420, 400, 20, 20, (255, 0, 255))
-
-turret_group = pygame.sprite.Group()
-turret_group.add(turret)
-
-
-#bullet = Bullet(420, 400, 5, 5, (255, 0, 0))
-
-#bullet_group = pygame.sprite.Group()
-#bullet_group.add(bullet)
 
 
 gamemap = GameMap()
@@ -224,9 +312,22 @@ while running:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			running = False
+			
+			
+			
+		# FOLLOWING IS FOR TESTING PURPOSES ONLY
 		if event.type == pygame.KEYDOWN:	# TODO: link with enemy crossing the line
 			if event.key == pygame.K_d:
 				gamemap.getDamage(20)
+		if event.type == pygame.KEYDOWN:	# TODO: link with wave spawn/kill/whatever
+			if event.key == pygame.K_g:
+				gamemap.getMoney(20)
+		if event.type == pygame.KEYDOWN:	# TODO: link with tower build
+			if event.key == pygame.K_h:
+				gamemap.spendMoney(20)
+		if event.type == pygame.KEYDOWN:	# TODO: automatisation, overall organisation
+			if event.key == pygame.K_s:
+				enemy.spawn()
 
 
 	surface.fill((255, 255, 255))
