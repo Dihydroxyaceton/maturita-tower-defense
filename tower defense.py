@@ -24,7 +24,7 @@ classes:
 """
 
 # loading images for enemies:
-# TODO: asi move to enemy class?
+
 enemy_type3 = pygame.image.load('enemies/kubelwagen_right.png')
 enemy_type3_d = pygame.image.load('enemies/kubelwagen_d_right.png')
 
@@ -64,11 +64,21 @@ class Enemy(pygame.sprite.Sprite):
 		if key[pygame.K_DOWN]:
 			self.rect.move_ip(0, 1)
            
+        # preparation for automatic movement
+		#  analyzuj self.levelMap v gameMap
+		#  pohybuj se pouze po "0" polích
+	#def analyse(self, gameMapPlan)
+           
+           
+           
+           
+           
 	def spawn(self): # spawn
+		enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
 		enemy_group = pygame.sprite.Group()
 		enemy_group.add(enemy)
 		
-		#enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
+		#
 		
 		
 		
@@ -98,22 +108,22 @@ class Turret(pygame.sprite.Sprite):
 	def drawMemory(self, surface):
 		"""creates the memory to remember whether a turret can be placed or not"""
 		# 0 = vacant place; 1 = occupied (either by a turret or a cliff)
-		self.levelMap=[]
-		self.levelMap.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-		self.levelMap.append([1,0,1,1,1,0,0,1,1,1,1,1,1,1,1])
-		self.levelMap.append([1,1,1,0,1,1,0,1,1,0,0,0,0,0,1])
-		self.levelMap.append([1,1,0,0,0,1,0,1,1,0,1,1,1,0,1])
-		self.levelMap.append([1,1,1,0,0,1,0,1,1,0,1,0,1,0,1])
-		self.levelMap.append([1,0,0,0,1,1,0,1,0,0,1,0,1,0,1])
-		self.levelMap.append([1,0,1,1,1,0,0,0,0,0,1,0,1,0,1])
-		self.levelMap.append([1,0,1,0,0,0,0,0,0,0,1,0,1,0,1])
-		self.levelMap.append([1,0,1,1,1,1,1,0,0,1,1,0,1,0,1])
-		self.levelMap.append([1,0,0,0,0,0,1,1,1,1,0,0,1,0,1])
-		self.levelMap.append([1,1,0,0,1,0,1,0,1,1,0,0,1,1,1])
-		self.levelMap.append([1,1,1,1,1,1,1,0,0,1,0,0,0,0,1])
-		self.levelMap.append([1,1,1,1,1,0,1,1,1,1,0,0,1,1,1])
-		self.levelMap.append([1,1,1,1,1,0,0,0,0,0,0,1,1,1,1])
-		self.levelMap.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+		self.turretMemory=[]
+		self.turretMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+		self.turretMemory.append([1,0,1,1,1,0,0,1,1,1,1,1,1,1,1])
+		self.turretMemory.append([1,1,1,0,1,1,0,1,1,0,0,0,0,0,1])
+		self.turretMemory.append([1,1,0,0,0,1,0,1,1,0,1,1,1,0,1])
+		self.turretMemory.append([1,1,1,0,0,1,0,1,1,0,1,0,1,0,1])
+		self.turretMemory.append([1,0,0,0,1,1,0,1,0,0,1,0,1,0,1])
+		self.turretMemory.append([1,0,1,1,1,0,0,0,0,0,1,0,1,0,1])
+		self.turretMemory.append([1,0,1,0,0,0,0,0,0,0,1,0,1,0,1])
+		self.turretMemory.append([1,0,1,1,1,1,1,0,0,1,1,0,1,0,1])
+		self.turretMemory.append([1,0,0,0,0,0,1,1,1,1,0,0,1,0,1])
+		self.turretMemory.append([1,1,0,0,1,0,1,0,1,1,0,0,1,1,1])
+		self.turretMemory.append([1,1,1,1,1,1,1,0,0,1,0,0,0,0,1])
+		self.turretMemory.append([1,1,1,1,1,0,1,1,1,1,0,0,1,1,1])
+		self.turretMemory.append([1,1,1,1,1,0,0,0,0,0,0,1,1,1,1])
+		self.turretMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
 
 	def update(self):
 		self.fire() #TODO: different settings (closest, strongest)
@@ -297,7 +307,7 @@ pygame.display.set_caption("soon to be TOWER DEFENSE") # window name
 
 
 
-
+#enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
 
 gamemap = GameMap()
 
@@ -330,16 +340,22 @@ while running:
 				enemy.spawn()
 
 
+# enemy = Enemy(...)
+# group.add(enemy)
+
+
+#NEBO add do konstruktoru 
+
 	surface.fill((255, 255, 255))
 	
 	gamemap.drawMap(surface)
 	gamemap.update()
 	
 	enemy_group.draw(surface)
-	enemy.update()
+	enemy.update() # group.update? 
 	
 	turret_group.draw(surface)
-	turret.update()
+	turret.update() # group.update? 
 	
 	
 	pygame.display.update()
