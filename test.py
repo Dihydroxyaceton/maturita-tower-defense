@@ -39,7 +39,7 @@ enemy_type3_d = pygame.image.load('enemies/kubelwagen_d_right.png')
 tower_type1 = pygame.image.load('towers/generic_tower.jpg')
 
 enemy_group = pygame.sprite.Group()
-
+tower_group = pygame.sprite.Group()
 
 
 class Tower(pygame.sprite.Sprite):
@@ -79,11 +79,8 @@ class Tower(pygame.sprite.Sprite):
 			self.delay_counter+=1
 		self.delay_counter = 0
 		
-	def spawn(self):	# TODO: make it work idk
-		tower_group = pygame.sprite.Group()
-		#tower_group.add(tower)
-		
-		#tower = Tower(420, 400, 20, 20, (255, 0, 255))
+
+
 		
 		
 	
@@ -180,7 +177,11 @@ class GameMap():
 		enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
 		enemy_group.add(enemy)
 
-
+	def tower_place(self):	# TODO: make it work idk
+		tower = Tower(420, 400, 30, 30, (255, 0, 255))
+		tower_group.add(tower)
+		print("tower placed")
+		#self, pos_x, pos_y, width, height, color
 
 
 	def showDeveloperStuff(self):
@@ -234,7 +235,11 @@ while running:
 		if event.type == pygame.KEYDOWN:	# TODO: link with tower build
 			if event.key == pygame.K_h:
 				gamemap.spendMoney(20)
-
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_x:
+				gamemap.spendMoney(20)
+				gamemap.tower_place()
+				
 
 # enemy = Enemy(...)
 # group.add(enemy)
