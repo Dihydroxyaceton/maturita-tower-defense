@@ -21,6 +21,25 @@ classes:
   bullet
     attributes: type, damage, location
     methodes: dealing damage
+    
+    
+    
+    
+    
+    
+    
+    
+kdo koho vytváří?
+třídy: enemy, game, turret, bullet
+
+game vytváří enemy
+game vytváří turret
+bullet ??? - asi game, s dosazením souřadnice z turrety
+    
+    
+    
+    
+    
 """
 
 # loading images for enemies:
@@ -28,7 +47,7 @@ classes:
 enemy_type3 = pygame.image.load('enemies/kubelwagen_right.png')
 enemy_type3_d = pygame.image.load('enemies/kubelwagen_d_right.png')
 
-
+enemy_group = pygame.sprite.Group()
 
 
 
@@ -39,11 +58,7 @@ enemy_type3_d = pygame.image.load('enemies/kubelwagen_d_right.png')
 
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, pos_x, pos_y, width, height, color, health, image): #TODO: movement speed, type
-		#super().__init__()
-		
-		pygame.enemy.Enemy.__init__(self, pos_x, pos_x, pos_y, width, height, color, health, image) #https://stackoverflow.com/questions/13851051/how-to-use-sprite-groups-in-pygame
-		
-		
+		#super().__init__()		
 		self.image = image
 		self.rect = self.image.get_rect()
 		self.rect.center = [pos_x, pos_y]
@@ -73,10 +88,7 @@ class Enemy(pygame.sprite.Sprite):
            
            
            
-	def spawn(self): # spawn
-		enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
-		enemy_group = pygame.sprite.Group()
-		enemy_group.add(enemy)
+
 		
 		#
 		
@@ -148,7 +160,7 @@ class Turret(pygame.sprite.Sprite):
 		
 		
 		
-
+"""
 class Bullet(pygame.sprite.Sprite):
 	def __init__(self, pos_x, pos_y, width, height, color): #TODO: damage, type
 		super().__init__()
@@ -180,7 +192,7 @@ class Bullet(pygame.sprite.Sprite):
 
 
 
-
+"""
 
 
 
@@ -230,13 +242,13 @@ class GameMap():
 				elif (self.levelMap[x][y]==0): # road
 					pygame.draw.rect(surface, (0, 128, 0), (y*40, x*40, 40, 40))
 			
-			
+	"""			
 	def detectDamage(self):		# TODO: add "amount" (damage system - different enemy types)
-		"""detecting enemy reaching the end of the map"""
+		#detecting enemy reaching the end of the map
 		if enemy.rect.colliderect(self.end_hitbox):
 			enemy.kill()
 			self.getDamage(1)	# TODO: OPTIMISE
-			
+	"""		
 	
 	def getDamage(self, amount):
 		"""subtracting health"""
@@ -277,15 +289,22 @@ class GameMap():
 		self.current_health_label = myfont.render(str(self.current_health)+"/"+str(self.maximum_health), 1, (0, 0, 0))
 		surface.blit(self.current_health_label, (670 , 55))
 
+
 	def update(self):
 		self.moneyIndicator()
 		self.healthBar()
-		self.detectDamage()
+		#self.detectDamage()
 		#self.showDeveloperStuff()
+
+	def enemy_spawn(self): # spawn
+		enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
+		enemy_group.add(enemy)
+
+
+
 
 	def showDeveloperStuff(self):
 		pygame.draw.rect(surface, (255, 154, 0), self.end_hitbox) #HITBOX END
-	
 	
 	
 	
@@ -337,7 +356,7 @@ while running:
 				gamemap.spendMoney(20)
 		if event.type == pygame.KEYDOWN:	# TODO: automatisation, overall organisation
 			if event.key == pygame.K_s:
-				enemy.spawn()
+				gamemap.enemy_spawn()
 
 
 # enemy = Enemy(...)
@@ -352,10 +371,10 @@ while running:
 	gamemap.update()
 	
 	enemy_group.draw(surface)
-	enemy.update() # group.update? 
+	enemy_group.update() # group.update? 
 	
-	turret_group.draw(surface)
-	turret.update() # group.update? 
+	#turret_group.draw(surface)
+	#turret.update() # group.update? 
 	
 	
 	pygame.display.update()
