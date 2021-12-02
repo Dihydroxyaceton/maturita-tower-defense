@@ -90,7 +90,7 @@ class GameMap():
 	def __init__(self):
 		self.current_health = 100	# current health
 		self.maximum_health = 100	# maximum health
-		self.current_money = 0 # money
+		self.current_money = 100 # money
 		self.health_bar_length = 180
 		self.health_ratio = self.maximum_health / self.health_bar_length # for optimal health bar appearence
 		self.end_hitbox = pygame.Rect(570, 400, 30, 40) # hitbox for obtaining damage
@@ -252,8 +252,8 @@ while running:
 	gamemap.drawMap(surface)
 	gamemap.update()
 
-	#tower_group.draw(surface)
-	#tower.update() # group.update? 
+	tower_group.draw(surface)
+	tower_group.update() # group.update? 
 	
 	
 	pygame.display.update()
