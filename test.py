@@ -1,7 +1,7 @@
 import pygame
 import os
 import numpy
-
+from random import randint
 
 """ 
 classes:
@@ -177,11 +177,19 @@ class GameMap():
 		enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
 		enemy_group.add(enemy)
 
-	def tower_place(self):	# TODO: make it work idk
-		tower = Tower(420, 400, 30, 30, (255, 0, 255))
+	def tower_place(self, pos_x, pos_y, width, height, color):
+		tower = Tower(pos_x, pos_y, width, height, color)
 		tower_group.add(tower)
 		print("tower placed")
 		#self, pos_x, pos_y, width, height, color
+
+	""" BACKUP
+	def tower_place(self):
+		tower = Tower(420, 400, 30, 30, (255, 0, 255))
+		tower_group.add(tower)
+		print("tower placed")
+		#self, pos_x, pos_y, width, height, colo
+	"""
 
 
 	def showDeveloperStuff(self):
@@ -235,10 +243,21 @@ while running:
 		if event.type == pygame.KEYDOWN:	# TODO: link with tower build
 			if event.key == pygame.K_h:
 				gamemap.spendMoney(20)
-		if event.type == pygame.KEYDOWN:
+				
+		if event.type == pygame.KEYDOWN: # TODO: link with tower build 
 			if event.key == pygame.K_x:
-				gamemap.spendMoney(20)
-				gamemap.tower_place()
+				# tower placing function
+				tower_price = 20
+				tower_pos_x = randint(0,600) # placeholder
+				tower_pos_y = randint(0,600) # - || -
+				tower_width = 30
+				tower_height = 30
+				color = (255, 0, 255) # link to image
+				if gamemap.current_money - tower_price >= 0:
+					gamemap.spendMoney(tower_price)
+					gamemap.tower_place(tower_pos_x, tower_pos_y, tower_width, tower_height, color)
+				else:
+					print("not enough money!")
 				
 
 # enemy = Enemy(...)
