@@ -58,7 +58,7 @@ enemy_group = pygame.sprite.Group()
 
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, pos_x, pos_y, width, height, color, health, image): #TODO: movement speed, type
-		#super().__init__()		
+		super().__init__()		
 		self.image = image
 		self.rect = self.image.get_rect()
 		self.rect.center = [pos_x, pos_y]
@@ -116,6 +116,7 @@ class Turret(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = [pos_x, pos_y]
 		self.delay_counter = 0
+		
 		
 	def drawMemory(self, surface):
 		"""creates the memory to remember whether a turret can be placed or not"""
