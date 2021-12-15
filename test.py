@@ -31,6 +31,8 @@ https://www.youtube.com/watch?v=TqbtxBntuF0&t=105s
     
 """
 
+
+
 # defining images for enemies and towers:
 
 enemy_type3 = pygame.image.load('enemies/kubelwagen_right.png')
@@ -94,7 +96,7 @@ class GameMap():
 		self.health_bar_length = 180
 		self.health_ratio = self.maximum_health / self.health_bar_length # for optimal health bar appearence
 		self.end_hitbox = pygame.Rect(570, 400, 30, 40) # hitbox for obtaining damage
-		
+		self.placing_tower = 0
 		
 	def drawMap(self, surface):  # TODO: structure, multiple levels
 		"""draws the map"""
@@ -166,10 +168,14 @@ class GameMap():
 		self.current_health_label = myfont.render(str(self.current_health)+"/"+str(self.maximum_health), 1, (0, 0, 0))
 		surface.blit(self.current_health_label, (670 , 55))
 
+	def towerChoice(self):
+		"""the player's ability to choose towers to place; tower goes gray when not affordable"""
+		pygame.draw.rect(surface, (255, 0, 255), (620, 100, 40, 40))
 
 	def update(self):
 		self.moneyIndicator()
 		self.healthBar()
+		self.towerChoice()
 		#self.detectDamage()
 		#self.showDeveloperStuff()
 
@@ -177,11 +183,34 @@ class GameMap():
 		enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
 		enemy_group.add(enemy)
 
+	def checkMouseIntentions(self, mouse_x, mouse_y):
+		if mouse_x > 620 and mouse_x < 660 and mouse_x > 100 and mouse_y < 140:
+			tower_price = 20 # PLACEHOLDER, change
+			if gamemap.current_money - tower_price >= 0:
+				print("tower 1 chosen")
+				self.placing_tower = 1
+			else:
+				print("not enough money!")
+		elif mouse_x < 600 and mouse_y < 600:
+			if self.placing_tower == 1:
+				tower_price = 20 # PLACEHOLDER, change
+				tower_width = 30 # CHANGE to image
+				tower_height = 30 # CHANGE to image
+				tower_color = (255, 0, 255) # link to image
+				gamemap.spendMoney(tower_price)
+				gamemap.tower_place(mouse_x, mouse_y, tower_width, tower_height, tower_color)
+				self.placing_tower = 0
+
+	
+	
 	def tower_place(self, pos_x, pos_y, width, height, color):
 		tower = Tower(pos_x, pos_y, width, height, color)
 		tower_group.add(tower)
 		print("tower placed")
 		#self, pos_x, pos_y, width, height, color
+
+
+
 
 	""" BACKUP
 	def tower_place(self):
@@ -215,6 +244,11 @@ pygame.display.set_caption("soon to be TOWER DEFENSE") # window name
 
 
 
+
+
+
+
+
 #enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
 
 gamemap = GameMap()
@@ -231,6 +265,19 @@ while running:
 		if event.type == pygame.QUIT:
 			running = False
 			
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			mouse_x_raw, mouse_y_raw = pygame.mouse.get_pos()
+			print(mouse_x_raw) # RAW data: not for grid
+			print(mouse_y_raw) # RAW data: not for grid
+			mouse_x = mouse_x_raw
+			mouse_y = mouse_y_raw
+			print(mouse_x) # aligned to grid
+			print(mouse_y) # aligned to grid
+			gamemap.checkMouseIntentions(mouse_x, mouse_y)
+			
+			
+			
+			
 			
 			
 		# FOLLOWING IS FOR TESTING PURPOSES ONLY
@@ -243,21 +290,7 @@ while running:
 		if event.type == pygame.KEYDOWN:	# TODO: link with tower build
 			if event.key == pygame.K_h:
 				gamemap.spendMoney(20)
-				
-		if event.type == pygame.KEYDOWN: # TODO: link with tower build 
-			if event.key == pygame.K_x:
-				# tower placing function
-				tower_price = 20
-				tower_pos_x = randint(0,600) # placeholder
-				tower_pos_y = randint(0,600) # - || -
-				tower_width = 30
-				tower_height = 30
-				color = (255, 0, 255) # link to image
-				if gamemap.current_money - tower_price >= 0:
-					gamemap.spendMoney(tower_price)
-					gamemap.tower_place(tower_pos_x, tower_pos_y, tower_width, tower_height, color)
-				else:
-					print("not enough money!")
+
 				
 
 # enemy = Enemy(...)

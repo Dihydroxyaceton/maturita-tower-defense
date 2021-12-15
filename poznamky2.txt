@@ -1,0 +1,10 @@
+620, 100
+
+
+in gamemap:
+gui elements (health bar, map etc):
+
+need to be updated -> created by function
+		health bar (hit)
+		tower choice (can / cannot afford)
+
