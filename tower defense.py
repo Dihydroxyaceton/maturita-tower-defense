@@ -1,6 +1,7 @@
 import pygame
 import os
 import numpy
+import math
 from random import randint
 
 """ 
@@ -105,9 +106,10 @@ class Tower(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = [pos_x, pos_y]
 		self.delay_counter = 0
-		
+	
+	""" CURRENTLY NOT NEEDED, MIGHT BE NEEDED SOMETIME	
 	def drawMemory(self, surface):
-		"""creates the memory to remember whether a tower can be placed or not"""
+		# creates the memory to remember whether a tower can be placed or not
 		# 0 = vacant place; 1 = occupied (either by a tower or a cliff)
 		self.towerMemory=[]
 		self.towerMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
@@ -125,6 +127,7 @@ class Tower(pygame.sprite.Sprite):
 		self.towerMemory.append([1,1,1,1,1,0,1,1,1,1,0,0,1,1,1])
 		self.towerMemory.append([1,1,1,1,1,0,0,0,0,0,0,1,1,1,1])
 		self.towerMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+	"""
 
 	def update(self):
 		self.fire() #TODO: different settings (closest, strongest)
@@ -151,11 +154,12 @@ class GameMap():
 		self.end_hitbox = pygame.Rect(570, 400, 30, 40) # hitbox for obtaining damage
 		self.placing_tower = 0
 		
+		
 		# link the following to specific tower type attributes
-		self.towerchoice_type1_x = 620
-		self.towerchoice_type2_x = 680
-		self.towerchoice_y = 100
-		self.towerchoice_size = 40
+		self.towerchoice_type1_x = 639 # -1 to compensate for click (click is perceived as directly on edge, wouldnt work without)
+		self.towerchoice_type2_x = 719
+		self.towerchoice_y = 119
+		self.towerchoice_size = 41
 		self.tower_price = 1
 		self.towercolor = (255, 255, 255)
 		
@@ -178,6 +182,7 @@ class GameMap():
 		self.levelMap.append([1,1,1,1,1,4,0,0,0,0,4,4,1,1,1])
 		self.levelMap.append([1,1,1,1,1,4,4,4,4,4,4,1,1,1,1])
 		self.levelMap.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+		
 		for x in range(15):
 			for y in range(15):
 				if (self.levelMap[x][y]==1): # empty tiles
@@ -235,18 +240,13 @@ class GameMap():
 		pygame.draw.rect(surface, (255, 0, 255), (self.towerchoice_type1_x, self.towerchoice_y, self.towerchoice_size, self.towerchoice_size))
 		pygame.draw.rect(surface, (0, 255, 255), (self.towerchoice_type2_x, self.towerchoice_y, self.towerchoice_size, self.towerchoice_size))
 
-	def update(self):
-		self.moneyIndicator()
-		self.healthBar()
-		self.towerChoice()
-		#self.detectDamage()
-		#self.showDeveloperStuff()
-
 	def enemy_spawn(self): # spawn
 		enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
 		enemy_group.add(enemy)
 
 	def checkMouseIntentions(self, mouse_x, mouse_y):
+		"""checks, where the click was made - decides on further action"""
+		# tower type #1 chosen:
 		if mouse_x > (self.towerchoice_type1_x) and mouse_x < (self.towerchoice_type1_x + self.towerchoice_size) and mouse_x > (self.towerchoice_y) and mouse_y < (self.towerchoice_y + self.towerchoice_size):
 			self.tower_price = 20 # PLACEHOLDER, change
 			if gamemap.current_money - self.tower_price >= 0:
@@ -255,6 +255,7 @@ class GameMap():
 				self.tower_color = (255, 0, 255) 
 			else:
 				print("not enough money!")
+		# tower type #2 chosen: 			following coordinates (self.towerchoice_type_2_x, etc) to be changed
 		elif mouse_x > (self.towerchoice_type2_x) and mouse_x < (self.towerchoice_type2_x + self.towerchoice_size) and mouse_x > (self.towerchoice_y) and mouse_y < (self.towerchoice_y + self.towerchoice_size):
 			self.tower_price = 50 # PLACEHOLDER, change
 			if gamemap.current_money - self.tower_price >= 0:
@@ -263,22 +264,34 @@ class GameMap():
 				self.tower_color = (0, 255, 255)
 			else:
 				print("not enough money!")
+		# clicked in playing field
 		elif mouse_x < 600 and mouse_y < 600:
 			if self.placing_tower == 1:
 				 # PLACEHOLDER, change
 				tower_width = 30 # CHANGE to image
 				tower_height = 30 # CHANGE to image
-				gamemap.spendMoney(self.tower_price)
-				gamemap.tower_place(mouse_x, mouse_y, tower_width, tower_height, self.tower_color)
-				self.placing_tower = 0
-
+				gamemap.tower_place(mouse_x + 20, mouse_y + 20, tower_width, tower_height, self.tower_color)
+				# + 20: compensation for off-grid
+		# clicked on spawn button
+		elif mouse_x > 639 and mouse_x < 760 and mouse_y > 519 and mouse_y < 560:
+			print("spawn")
+			self.enemy_spawn()
 	
+	
+	def spawnButton(self):
+		pygame.draw.rect(surface, (0, 255, 0), (639, 519, 121, 41))
 	
 	def tower_place(self, pos_x, pos_y, width, height, color):
-		tower = Tower(pos_x, pos_y, width, height, color)
-		tower_group.add(tower)
-		print("tower placed")
-		#self, pos_x, pos_y, width, height, color
+		if self.getGridField(pos_x, pos_y) == True:
+			tower = Tower(pos_x, pos_y, width, height, color)
+			tower_group.add(tower)
+			print("tower placed")
+			gamemap.spendMoney(self.tower_price)
+			self.placing_tower = 0
+		else:
+			print("invalid position!")	
+		
+			#self, pos_x, pos_y, width, height, color
 
 
 	def enemy_spawn(self): # spawn
@@ -293,6 +306,29 @@ class GameMap():
 		print("tower placed")
 		#self, pos_x, pos_y, width, height, colo
 	"""
+
+
+	def update(self):
+		self.moneyIndicator()
+		self.healthBar()
+		self.towerChoice()
+		self.spawnButton()
+		#self.detectDamage()
+		#self.showDeveloperStuff()
+
+	def getGridField(self, mouse_x, mouse_y):
+		"""gets clicked field in grid; finds the value in gamemap (numbers = grid coordinates)"""
+		self.grid_field_x = math.floor(mouse_x / 40)
+		self.grid_field_y = math.floor(mouse_y / 40)
+		print(self.grid_field_x)
+		print(self.grid_field_y)
+		self.grid_value = (self.levelMap[self.grid_field_y][self.grid_field_x])
+		if self.grid_value == 4:
+			return True
+		
+		
+
+
 
 
 	def showDeveloperStuff(self):
@@ -341,12 +377,14 @@ while running:
 			
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			mouse_x_raw, mouse_y_raw = pygame.mouse.get_pos()
-			print(mouse_x_raw) # RAW data: not for grid
-			print(mouse_y_raw) # RAW data: not for grid
-			mouse_x = mouse_x_raw
-			mouse_y = mouse_y_raw
-			print(mouse_x) # aligned to grid
-			print(mouse_y) # aligned to grid
+			print("raw click x: "+str(mouse_x_raw)) # RAW data: not for grid
+			print("raw click y: "+str(mouse_y_raw)) # RAW data: not for grid
+			mouse_x = (math.floor(mouse_x_raw / 40) * 40)
+			mouse_y = (math.floor(mouse_y_raw / 40) * 40)
+			print("grid x: "+str((math.floor(mouse_x_raw / 40))))
+			print("grid y: "+str((math.floor(mouse_y_raw / 40))))
+			print("grid aligned x: "+str(mouse_x)) # aligned to grid
+			print("grid aligned y: "+str(mouse_y)) # aligned to grid
 			gamemap.checkMouseIntentions(mouse_x, mouse_y)
 			
 			
@@ -364,9 +402,6 @@ while running:
 		if event.type == pygame.KEYDOWN:	# TODO: link with tower build
 			if event.key == pygame.K_h:
 				gamemap.spendMoney(20)
-		if event.type == pygame.KEYDOWN:	# TODO: automatisation, overall organisation
-			if event.key == pygame.K_s:
-				gamemap.enemy_spawn()
 
 				
 
