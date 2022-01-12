@@ -2,6 +2,7 @@ import pygame
 import os
 import numpy
 import math
+import time
 from random import randint
 
 """ 
@@ -44,104 +45,22 @@ tower_type1 = pygame.image.load('towers/generic_tower.jpg')
 enemy_group = pygame.sprite.Group()
 tower_group = pygame.sprite.Group()
 
-
-
-
-
-class Enemy(pygame.sprite.Sprite):
-	def __init__(self, pos_x, pos_y, width, height, color, health, image): #TODO: movement speed, type
-		super().__init__()		
-		self.image = image
-		self.rect = self.image.get_rect()
-		self.rect.center = [pos_x, pos_y]
-		
-		
-		#self.current_health = 50	# TODO: health system
-
-	def move(self): # basic movement function, TODO: automatise (pathfinding?)
-		key = pygame.key.get_pressed()
-        
-		dist = 1
-		if key[pygame.K_LEFT]:
-			self.rect.move_ip(-1, 0)
-		if key[pygame.K_RIGHT]:
-			self.rect.move_ip(1, 0)
-		if key[pygame.K_UP]:
-			self.rect.move_ip(0, -1)
-		if key[pygame.K_DOWN]:
-			self.rect.move_ip(0, 1)
-           
-        # preparation for automatic movement
-		#  analyzuj self.levelMap v gameMap
-		#  pohybuj se pouze po "0" polích
-	#def analyse(self, gameMapPlan)
-           
-           
-           
-           
-           
-
-		
-		#
-		
-		
-		
-	def drawEnemy(self, surface): # draw enemy
-		pygame.draw.rect(surface, (0, 0, 0), self.rect)
-
-	def update(self):
-		self.move()
+"""
+wave_1 = ["A","A","A","A","A"]
+wave_2 = [A,A,A,A,A,A,A,A,A]
+wave_3 = [A,A,A,A,A,B,B]
+wave_4 = [A,A,A,A,B,B,B,B,B]
+wave_5 = [B,B,B,B,B,B,B]
+wave_6 = [B,B,B,B,B,B,B,C,C]
+wave_7 = [B,B,B,C,C,C,C]
+wave_8 = [C,C,C,C,C,C,C,C,C]
+wave_9 = [C,C,C,D] # boss
+"""
 
 
 
 
 
-
-
-class Tower(pygame.sprite.Sprite):
-	def __init__(self, pos_x, pos_y, width, height, color): #TODO: cost, type, fire_delay
-		super().__init__()
-		self.image = pygame.Surface([width, height])
-		self.image.fill(color)
-		self.rect = self.image.get_rect()
-		self.rect.center = [pos_x, pos_y]
-		self.delay_counter = 0
-	
-	""" CURRENTLY NOT NEEDED, MIGHT BE NEEDED SOMETIME	
-	def drawMemory(self, surface):
-		# creates the memory to remember whether a tower can be placed or not
-		# 0 = vacant place; 1 = occupied (either by a tower or a cliff)
-		self.towerMemory=[]
-		self.towerMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-		self.towerMemory.append([1,0,1,1,1,0,0,1,1,1,1,1,1,1,1])
-		self.towerMemory.append([1,1,1,0,1,1,0,1,1,0,0,0,0,0,1])
-		self.towerMemory.append([1,1,0,0,0,1,0,1,1,0,1,1,1,0,1])
-		self.towerMemory.append([1,1,1,0,0,1,0,1,1,0,1,0,1,0,1])
-		self.towerMemory.append([1,0,0,0,1,1,0,1,0,0,1,0,1,0,1])
-		self.towerMemory.append([1,0,1,1,1,0,0,0,0,0,1,0,1,0,1])
-		self.towerMemory.append([1,0,1,0,0,0,0,0,0,0,1,0,1,0,1])
-		self.towerMemory.append([1,0,1,1,1,1,1,0,0,1,1,0,1,0,1])
-		self.towerMemory.append([1,0,0,0,0,0,1,1,1,1,0,0,1,0,1])
-		self.towerMemory.append([1,1,0,0,1,0,1,0,1,1,0,0,1,1,1])
-		self.towerMemory.append([1,1,1,1,1,1,1,0,0,1,0,0,0,0,1])
-		self.towerMemory.append([1,1,1,1,1,0,1,1,1,1,0,0,1,1,1])
-		self.towerMemory.append([1,1,1,1,1,0,0,0,0,0,0,1,1,1,1])
-		self.towerMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-	"""
-
-	def update(self):
-		self.fire() #TODO: different settings (closest, strongest)
-		
-	def fire(self):
-		for i in range(50): #TODO: replace 50 with "fire_delay": every x pygame cycles, the tower fires
-			self.delay_counter+=1
-		self.delay_counter = 0
-		
-
-
-		
-		
-	
 
 
 class GameMap():
@@ -183,6 +102,9 @@ class GameMap():
 		self.levelMap.append([1,1,1,1,1,4,4,4,4,4,4,1,1,1,1])
 		self.levelMap.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
 		
+		self.start_point_x = 20 # TODO: not absolute number
+		self.start_point_y = 100
+		
 		for x in range(15):
 			for y in range(15):
 				if (self.levelMap[x][y]==1): # empty tiles
@@ -195,6 +117,14 @@ class GameMap():
 					pygame.draw.rect(surface, (139, 105, 20), (y*40, x*40, 40, 40))	
 				elif (self.levelMap[x][y]==0): # road
 					pygame.draw.rect(surface, (0, 128, 0), (y*40, x*40, 40, 40))
+					
+	def detectDamage(self):		# TODO: add "amount" (damage system - different enemy types)
+		"""detecting enemy reaching the end of the map"""
+		for enemy in enemy_group:
+			reachesEnd = enemy.colliderect(self.end_hitbox)
+			if reachesEnd == True:
+				self.getDamage(1)
+	
 	
 	def getDamage(self, amount):
 		"""subtracting health"""
@@ -252,7 +182,8 @@ class GameMap():
 			if gamemap.current_money - self.tower_price >= 0:
 				print("tower 1 chosen")
 				self.placing_tower = 1
-				self.tower_color = (255, 0, 255) 
+				self.tower_color = (255, 0, 255)
+				self.tower_reach = 50 
 			else:
 				print("not enough money!")
 		# tower type #2 chosen: 			following coordinates (self.towerchoice_type_2_x, etc) to be changed
@@ -262,6 +193,7 @@ class GameMap():
 				print("tower 2 chosen")
 				self.placing_tower = 1
 				self.tower_color = (0, 255, 255)
+				self.tower_reach = 120
 			else:
 				print("not enough money!")
 		# clicked in playing field
@@ -270,7 +202,7 @@ class GameMap():
 				 # PLACEHOLDER, change
 				tower_width = 30 # CHANGE to image
 				tower_height = 30 # CHANGE to image
-				gamemap.tower_place(mouse_x + 20, mouse_y + 20, tower_width, tower_height, self.tower_color)
+				gamemap.tower_place(mouse_x + 20, mouse_y + 20, tower_width, tower_height, self.tower_color, self.tower_reach)
 				# + 20: compensation for off-grid
 		# clicked on spawn button
 		elif mouse_x > 639 and mouse_x < 760 and mouse_y > 519 and mouse_y < 560:
@@ -281,10 +213,14 @@ class GameMap():
 	def spawnButton(self):
 		pygame.draw.rect(surface, (0, 255, 0), (639, 519, 121, 41))
 	
-	def tower_place(self, pos_x, pos_y, width, height, color):
-		if self.getGridField(pos_x, pos_y) == True:
-			tower = Tower(pos_x, pos_y, width, height, color)
+	def tower_place(self, pos_x, pos_y, width, height, color, reach):
+		if self.checkGridField(pos_x, pos_y) == 4:
+			tower = Tower(pos_x, pos_y, width, height, color, reach)
+			#self.reach_circle = pygame.draw.circle(surface, (255, 0, 0), (pos_x, pos_y), reach, 5)
 			tower_group.add(tower)
+			
+			
+			# TODO: add protection against placing atop of another tower
 			print("tower placed")
 			gamemap.spendMoney(self.tower_price)
 			self.placing_tower = 0
@@ -313,26 +249,207 @@ class GameMap():
 		self.healthBar()
 		self.towerChoice()
 		self.spawnButton()
+		#self.checkTowerRange(Enemy, Tower)
 		#self.detectDamage()
 		#self.showDeveloperStuff()
 
-	def getGridField(self, mouse_x, mouse_y):
-		"""gets clicked field in grid; finds the value in gamemap (numbers = grid coordinates)"""
+	def checkGridField(self, mouse_x, mouse_y):
+		"""checks clicked field in grid; finds the value in gamemap (numbers = grid coordinates)"""
 		self.grid_field_x = math.floor(mouse_x / 40)
 		self.grid_field_y = math.floor(mouse_y / 40)
-		print(self.grid_field_x)
-		print(self.grid_field_y)
 		self.grid_value = (self.levelMap[self.grid_field_y][self.grid_field_x])
-		if self.grid_value == 4:
-			return True
+		return self.grid_value
 		
-		
-
-
+	"""
+	def checkTowerRange(self, enemy, tower):
+		in_range = pygame.sprite.collide_rect(Enemy, Tower)
+		if in_range == True:
+			print("in range")
+	"""
 
 
 	def showDeveloperStuff(self):
 		pygame.draw.rect(surface, (255, 154, 0), self.end_hitbox) #HITBOX END
+
+
+
+
+class Enemy(pygame.sprite.Sprite):
+	def __init__(self, pos_x, pos_y, width, height, color, health, image): #TODO: movement speed, type
+		super().__init__()		
+		self.image = image
+		self.rect = self.image.get_rect()
+		self.rect.center = [pos_x, pos_y]
+		self.pos_x = gamemap.start_point_x
+		self.pos_y = gamemap.start_point_y
+		self.movement_cooldown = 0
+		self.lookingForPath = True
+		self.goRightOk = True
+		self.goLeftOk = True
+		self.goUpOk = True
+		self.goDownOk = True
+		#self.current_health = 50	# TODO: health system
+
+
+
+
+
+	def findPath(self):
+		if self.goRightOk == True:
+			if gamemap.checkGridField(self.pos_x + 40, self.pos_y) == 0:
+				print("Going RIGHT")
+				self.lookingForPath = False
+				self.goLeftOk = False
+				for i in range(40):
+					self.rect.move_ip(1, 0)
+					self.pos_x += 1
+				self.lookingForPath = True
+				self.goRightOk = True
+				self.goUpOk = True
+				self.goDownOk = True
+		if self.goLeftOk == True:
+			if gamemap.checkGridField(self.pos_x - 40, self.pos_y) == 0:
+				print("Going LEFT")
+				self.lookingForPath = False
+				self.goRightOk = False
+				for i in range(40):
+					self.rect.move_ip(-1, 0)
+					self.pos_x -= 1
+				self.lookingForPath = True
+				self.goLeftOk = True
+				self.goUpOk = True
+				self.goDownOk = True
+		if self.goUpOk == True:
+			if gamemap.checkGridField(self.pos_x, self.pos_y - 40) == 0:
+				print("Going UP")
+				self.lookingForPath = False
+				self.goDownOk = False
+				for i in range(40):
+					self.rect.move_ip(0, -1)
+					self.pos_y -= 1
+				self.lookingForPath = True
+				self.goRightOk = True
+				self.goLeftOk = True
+				self.goUpOk = True
+		if self.goDownOk == True:
+			if gamemap.checkGridField(self.pos_x, self.pos_y + 40) == 0:
+				print("Going DOWN")
+				self.lookingForPath = False
+				self.goUpOk = False
+				for i in range(40):					
+					self.rect.move_ip(0, 1)
+					self.pos_y += 1
+				self.lookingForPath = True					
+				self.goRightOk = True
+				self.goLeftOk = True
+				self.goDownOk = True					
+								
+
+					
+
+					
+					
+					
+					
+					
+		"""
+		key = pygame.key.get_pressed()  
+		dist = 1
+		if key[pygame.K_LEFT]:
+			self.rect.move_ip(-1, 0)
+			self.pos_x -= 1
+		if key[pygame.K_RIGHT]:
+			self.rect.move_ip(1, 0)
+			self.pos_x += 1
+		if key[pygame.K_UP]:
+			self.rect.move_ip(0, -1)
+			self.pos_y -= 1
+		if key[pygame.K_DOWN]:
+			self.rect.move_ip(0, 1)
+			self.pos_y += 1
+        """
+
+
+		
+		
+
+			
+        
+           
+           
+           
+
+		
+		#
+		
+		
+		
+	def drawEnemy(self, surface): # draw enemy
+		pygame.draw.rect(surface, (0, 0, 0), self.rect)
+
+	def update(self):
+		if self.lookingForPath == True:
+			self.findPath()
+
+
+
+
+
+class Tower(pygame.sprite.Sprite):
+	def __init__(self, pos_x, pos_y, width, height, color, reach): #TODO: cost, type, fire_delay
+		super().__init__()
+		self.image = pygame.Surface([width, height])
+		self.image.fill(color)
+		self.rect = self.image.get_rect()
+		self.reach_circle = pygame.draw.circle(surface, (255, 0, 0), (pos_x, pos_y), reach, 5)
+		self.rect.center = [pos_x, pos_y]
+		self.delay_counter = 0
+			
+			
+	""" CURRENTLY NOT NEEDED, MIGHT BE NEEDED SOMETIME	
+	def drawMemory(self, surface):
+		# creates the memory to remember whether a tower can be placed or not
+		# 0 = vacant place; 1 = occupied (either by a tower or a cliff)
+		self.towerMemory=[]
+		self.towerMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+		self.towerMemory.append([1,0,1,1,1,0,0,1,1,1,1,1,1,1,1])
+		self.towerMemory.append([1,1,1,0,1,1,0,1,1,0,0,0,0,0,1])
+		self.towerMemory.append([1,1,0,0,0,1,0,1,1,0,1,1,1,0,1])
+		self.towerMemory.append([1,1,1,0,0,1,0,1,1,0,1,0,1,0,1])
+		self.towerMemory.append([1,0,0,0,1,1,0,1,0,0,1,0,1,0,1])
+		self.towerMemory.append([1,0,1,1,1,0,0,0,0,0,1,0,1,0,1])
+		self.towerMemory.append([1,0,1,0,0,0,0,0,0,0,1,0,1,0,1])
+		self.towerMemory.append([1,0,1,1,1,1,1,0,0,1,1,0,1,0,1])
+		self.towerMemory.append([1,0,0,0,0,0,1,1,1,1,0,0,1,0,1])
+		self.towerMemory.append([1,1,0,0,1,0,1,0,1,1,0,0,1,1,1])
+		self.towerMemory.append([1,1,1,1,1,1,1,0,0,1,0,0,0,0,1])
+		self.towerMemory.append([1,1,1,1,1,0,1,1,1,1,0,0,1,1,1])
+		self.towerMemory.append([1,1,1,1,1,0,0,0,0,0,0,1,1,1,1])
+		self.towerMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+	"""
+"""
+	def update(self):
+		self.checkForEnemies()		
+		
+	def fire(self):
+		for i in range(50): #TODO: replace 50 with "fire_delay": every x pygame cycles, the tower fires
+			self.delay_counter+=1
+		self.delay_counter = 0
+		
+
+	def checkForEnemies (self):
+		in_reach = self.reach_circle.colliderect()
+		if in_reach:
+			print ("enemy in reach")
+			self.fire() #TODO: different settings (closest, strongest)
+"""
+
+		
+		
+	
+
+
+
 	
 	
 	
@@ -425,7 +542,7 @@ while running:
 	
 	pygame.display.update()
 
-	clock.tick(100)
+	clock.tick(60)
 
 
 
