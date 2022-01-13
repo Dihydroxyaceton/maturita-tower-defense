@@ -215,7 +215,12 @@ class GameMap():
 	
 	def tower_place(self, pos_x, pos_y, width, height, color, reach):
 		if self.checkGridField(pos_x, pos_y) == 4:
-			tower = Tower(pos_x, pos_y, width, height, color, reach)
+			tower = Tower(pos_x, pos_y, width+60, height+60, color, reach) # for testing purposes only
+			
+			#tower = Tower(pos_x, pos_y, width, height, color, reach) BACKUP
+			
+			
+			
 			#self.reach_circle = pygame.draw.circle(surface, (255, 0, 0), (pos_x, pos_y), reach, 5)
 			tower_group.add(tower)
 			
@@ -390,6 +395,14 @@ class Enemy(pygame.sprite.Sprite):
 	def update(self):
 		if self.lookingForPath == True:
 			self.findPath()
+		"""
+		if pygame.sprite.spritecollide(self, gamemap.end_hitbox, True):
+			print("reached the end")
+		if enemy.rect.collide_rect(self, tower.rect, True):
+			print("hit by tower")
+		"""
+
+
 
 
 
@@ -401,7 +414,7 @@ class Tower(pygame.sprite.Sprite):
 		self.image = pygame.Surface([width, height])
 		self.image.fill(color)
 		self.rect = self.image.get_rect()
-		self.reach_circle = pygame.draw.circle(surface, (255, 0, 0), (pos_x, pos_y), reach, 5)
+		#self.reach_circle = pygame.draw.circle(surface, (255, 0, 0), (pos_x, pos_y), reach, 5)
 		self.rect.center = [pos_x, pos_y]
 		self.delay_counter = 0
 			
@@ -427,10 +440,13 @@ class Tower(pygame.sprite.Sprite):
 		self.towerMemory.append([1,1,1,1,1,0,0,0,0,0,0,1,1,1,1])
 		self.towerMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
 	"""
-"""
-	def update(self):
-		self.checkForEnemies()		
+
+	#def update(self):
+
 		
+		
+			
+"""		
 	def fire(self):
 		for i in range(50): #TODO: replace 50 with "fire_delay": every x pygame cycles, the tower fires
 			self.delay_counter+=1
@@ -470,14 +486,6 @@ pygame.display.set_caption("soon to be TOWER DEFENSE") # window name
 
 
 
-
-
-
-
-
-
-#enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
-
 gamemap = GameMap()
 
 clock = pygame.time.Clock()
@@ -504,7 +512,19 @@ while running:
 			print("grid aligned y: "+str(mouse_y)) # aligned to grid
 			gamemap.checkMouseIntentions(mouse_x, mouse_y)
 			
+		"""
+		for enemy in enemy_group:
+			if pygame.sprite.spritecollide(enemy, tower_group, True):
+				print("hit a tower")
+		"""	
+		for tower in tower_group:
+			if pygame.sprite.spritecollide(tower, enemy_group, True):
+				print("hit a tower - enemy despawning .......................")
 			
+		"""
+		if pygame.sprite.spritecollide(enemy, gamemap.end_hitbox, True):
+			print("reached the end")
+		"""	
 			
 			
 			
