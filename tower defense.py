@@ -73,6 +73,11 @@ class GameMap():
 		self.end_hitbox = pygame.Rect(570, 400, 30, 40) # hitbox for obtaining damage
 		self.placing_tower = 0
 		
+		self.wave_i = 1
+		
+		
+		
+		
 		
 		# link the following to specific tower type attributes
 		self.towerchoice_type1_x = 639 # -1 to compensate for click (click is perceived as directly on edge, wouldnt work without)
@@ -236,8 +241,9 @@ class GameMap():
 
 
 	def enemy_spawn(self): # spawn
-		enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
-		enemy_group.add(enemy)
+		for i in range(self.wave_i):	# interval
+			enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
+			enemy_group.add(enemy)
 		
 
 	""" BACKUP
@@ -296,9 +302,6 @@ class Enemy(pygame.sprite.Sprite):
 		#self.current_health = 50	# TODO: health system
 
 
-
-
-
 	def findPath(self):
 		if self.goRightOk == True:
 			if gamemap.checkGridField(self.pos_x + 40, self.pos_y) == 0:
@@ -347,46 +350,7 @@ class Enemy(pygame.sprite.Sprite):
 				self.lookingForPath = True					
 				self.goRightOk = True
 				self.goLeftOk = True
-				self.goDownOk = True					
-								
-
-					
-
-					
-					
-					
-					
-					
-		"""
-		key = pygame.key.get_pressed()  
-		dist = 1
-		if key[pygame.K_LEFT]:
-			self.rect.move_ip(-1, 0)
-			self.pos_x -= 1
-		if key[pygame.K_RIGHT]:
-			self.rect.move_ip(1, 0)
-			self.pos_x += 1
-		if key[pygame.K_UP]:
-			self.rect.move_ip(0, -1)
-			self.pos_y -= 1
-		if key[pygame.K_DOWN]:
-			self.rect.move_ip(0, 1)
-			self.pos_y += 1
-        """
-
-
-		
-		
-
-			
-        
-           
-           
-           
-
-		
-		#
-		
+				self.goDownOk = True
 		
 		
 	def drawEnemy(self, surface): # draw enemy
@@ -517,7 +481,7 @@ while running:
 			if pygame.sprite.spritecollide(enemy, tower_group, True):
 				print("hit a tower")
 		"""	
-		for tower in tower_group:
+		for tower in tower_group:				# každá věž zkontroluje všechny nepřátele
 			if pygame.sprite.spritecollide(tower, enemy_group, True):
 				print("hit a tower - enemy despawning .......................")
 			

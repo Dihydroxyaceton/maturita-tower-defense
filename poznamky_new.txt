@@ -1,0 +1,4 @@
+rozfázovat pohyb nepřátel (ne 1 for cyklus)
+počítání času v hlavním cyklu
+	plán na vlny: seznamy: dvojice: čas a jaký nepřítel má vzniknout
+hlavní cyklus počítá čas
