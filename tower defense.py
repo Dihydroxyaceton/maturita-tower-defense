@@ -45,6 +45,14 @@ tower_type1 = pygame.image.load('towers/generic_tower.jpg')
 enemy_group = pygame.sprite.Group()
 tower_group = pygame.sprite.Group()
 
+print("WELCOME TO TOWER DEFENSE, WAVE 1 IN 5 SECONDS")
+
+tick_time = 180
+
+
+wave_delay_list = [5*tick_time, 3*tick_time, 3*tick_time]
+wave_enemycount_list = [0, 2, 3, 5, 7]
+
 """
 wave_1 = ["A","A","A","A","A"]
 wave_2 = [A,A,A,A,A,A,A,A,A]
@@ -73,7 +81,10 @@ class GameMap():
 		self.end_hitbox = pygame.Rect(570, 400, 30, 40) # hitbox for obtaining damage
 		self.placing_tower = 0
 		self.passed_ticks = 0
-		
+		self.wave_pause = 0
+		self.spawned_in_wave = 0
+		self.spawn_var = False
+		self.current_wave = 0
 		
 		# link the following to specific tower type attributes
 		self.towerchoice_type1_x = 639 # -1 to compensate for click (click is perceived as directly on edge, wouldnt work without)
@@ -82,8 +93,7 @@ class GameMap():
 		self.towerchoice_size = 41
 		self.tower_price = 1
 		self.towercolor = (255, 255, 255)
-		
-		print("First wave coming in 3 seconds")
+
 		
 	def drawMap(self, surface):  # TODO: structure, multiple levels
 		"""draws the map"""
@@ -143,15 +153,6 @@ class GameMap():
 		"""subtracting money"""		# TODO: protection against going below 0
 		if self.current_money > 0: 
 			self.current_money -= amount
-
-	# HEALING: to be implemented?
-	"""
-	def getHealth(self, amount):
-		if self.current_health < self.maximum_health:
-			self.current_health += amount
-		if self.current_health >= self.maximum_health:
-			self.current_health = self.maximum_health
-	"""
 
 	def moneyIndicator(self):	
 		"""shows money available; for money, the player can purchase towers"""
@@ -227,14 +228,37 @@ class GameMap():
 
 
 	def enemySpawn(self): # spawn
-		#if self.
+			#print(str(self.wave_pause) + str(self.spawned_in_wave))
 			if self.passed_ticks == 180:
-				self.passed_ticks = 0
-				enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
-				enemy_group.add(enemy)
+				if self.current_wave < len(wave_enemycount_list):	
+					if self.spawn_var == True:
+						self.passed_ticks = 0
+						enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
+						enemy_group.add(enemy)
+						self.spawned_in_wave += 1
+						if self.spawned_in_wave >= wave_enemycount_list[self.current_wave]:
+							self.spawn_var = False
+							self.spawned_in_wave = 0
+							print("END WAVE "+str(self.current_wave)+", NEXT WAVE IN 5 SECONDS")
+					else:
+						if self.wave_pause >= 900:
+							self.wave_pause = 0
+							self.spawn_var = True
+							#print("RESETING PAUSE CLOCK")
+							self.current_wave += 1
+							print("STARTING WAVE "+str(self.current_wave))
+						else:
+							self.wave_pause += 1
+				else:
+					print("GAME OVER")
+					running = False		
 			else:
 				self.passed_ticks += 1
 		
+		
+	
+
+
 
 	""" BACKUP
 	def tower_place(self):
@@ -294,7 +318,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.goLeftOk = True
 		self.goUpOk = True
 		self.goDownOk = True
-		#self.current_health = 50	# TODO: health system
+		self.current_health = 50	# TODO: health system
 	
 
 
@@ -369,7 +393,11 @@ class Enemy(pygame.sprite.Sprite):
 			self.movement_var = 0
 			self.moved_pixels = 0
 	
-	
+	def getHit(self, amount):
+		self.current_health -= amount
+		if self.current_health <= 0:
+			pygame.sprite.Sprite.kill(self)
+			gamemap.getMoney(20)		
 	
 		
 		
@@ -387,19 +415,11 @@ class Enemy(pygame.sprite.Sprite):
 			self.moveDown()
 		if self.movement_var == 4:
 			self.moveLeft()
-			
-		"""
-		if pygame.sprite.spritecollide(self, gamemap.end_hitbox, True):
-			print("reached the end")
-		if enemy.rect.collide_rect(self, tower.rect, True):
-			print("hit by tower")
-		"""
-
-
-
-
-
-
+		if self.pos_x >= 570:
+			pygame.sprite.Sprite.kill(self)
+			gamemap.getDamage(1)
+		
+		
 
 class Tower(pygame.sprite.Sprite):
 	def __init__(self, pos_x, pos_y, width, height, color, reach): #TODO: cost, type, fire_delay
@@ -505,41 +525,22 @@ while running:
 			print("grid aligned y: "+str(mouse_y)) # aligned to grid
 			gamemap.checkMouseIntentions(mouse_x, mouse_y)
 			
-		"""
-		for enemy in enemy_group:
-			if pygame.sprite.spritecollide(enemy, tower_group, True):
-				print("hit a tower")
-		"""	
-		for tower in tower_group:				# každá věž zkontroluje všechny nepřátele
-			if pygame.sprite.spritecollide(tower, enemy_group, True):
-				print("hit a tower - enemy despawning .......................")
+
+	for enemy in enemy_group:
+		if pygame.sprite.spritecollide(enemy, tower_group, False):
+			print("hit a tower")
 			
-		for enemy in enemy_group:
-			if enemy.rect.colliderect(gamemap.end_hitbox):
-				print("reached the end")
+	for tower in tower_group:				# každá věž zkontroluje všechny nepřátele
+		if pygame.sprite.spritecollide(tower, enemy_group, True):
+			print("hit a tower - enemy despawning .......................")			
+
 
 			
-			
-			
-			
 		# FOLLOWING IS FOR TESTING PURPOSES ONLY
-		if event.type == pygame.KEYDOWN:	# TODO: link with enemy crossing the line
-			if event.key == pygame.K_d:
-				gamemap.getDamage(20)
 		if event.type == pygame.KEYDOWN:	# TODO: link with wave spawn/kill/whatever
 			if event.key == pygame.K_g:
 				gamemap.getMoney(20)
-		if event.type == pygame.KEYDOWN:	# TODO: link with tower build
-			if event.key == pygame.K_h:
-				gamemap.spendMoney(20)
 
-				
-
-# enemy = Enemy(...)
-# group.add(enemy)
-
-
-#NEBO add do konstruktoru 
 
 	surface.fill((255, 255, 255))
 	
@@ -556,7 +557,7 @@ while running:
 	
 	pygame.display.update()
 
-	clock.tick(60)
+	clock.tick(tick_time)
 
 
 
