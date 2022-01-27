@@ -72,11 +72,7 @@ class GameMap():
 		self.health_ratio = self.maximum_health / self.health_bar_length # for optimal health bar appearence
 		self.end_hitbox = pygame.Rect(570, 400, 30, 40) # hitbox for obtaining damage
 		self.placing_tower = 0
-		
-		self.wave_i = 1
-		
-		
-		
+		self.passed_ticks = 0
 		
 		
 		# link the following to specific tower type attributes
@@ -87,13 +83,14 @@ class GameMap():
 		self.tower_price = 1
 		self.towercolor = (255, 255, 255)
 		
+		print("First wave coming in 3 seconds")
 		
 	def drawMap(self, surface):  # TODO: structure, multiple levels
 		"""draws the map"""
 		self.levelMap=[]
 		self.levelMap.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
 		self.levelMap.append([1,4,0,0,0,4,4,1,1,1,1,1,1,1,1])
-		self.levelMap.append([2,0,0,4,0,0,4,1,1,4,4,4,4,4,1])
+		self.levelMap.append([0,0,0,4,0,0,4,1,1,4,4,4,4,4,1])
 		self.levelMap.append([1,1,4,4,4,0,4,1,1,4,0,0,0,4,1])
 		self.levelMap.append([1,1,1,4,4,0,4,1,1,4,0,4,0,4,1])
 		self.levelMap.append([1,4,4,4,0,0,4,1,4,4,0,4,0,4,1])
@@ -101,7 +98,7 @@ class GameMap():
 		self.levelMap.append([1,4,0,4,4,4,4,4,4,4,0,4,0,4,1])
 		self.levelMap.append([1,4,0,0,0,0,0,4,4,0,0,4,0,4,1])
 		self.levelMap.append([1,4,4,4,4,4,0,1,1,0,4,4,0,4,1])
-		self.levelMap.append([1,1,4,4,1,4,0,4,1,0,4,4,0,0,3])
+		self.levelMap.append([1,1,4,4,1,4,0,4,1,0,4,4,0,0,0])
 		self.levelMap.append([1,1,1,1,1,1,0,4,4,0,4,4,4,4,1])
 		self.levelMap.append([1,1,1,1,1,4,0,0,0,0,4,4,1,1,1])
 		self.levelMap.append([1,1,1,1,1,4,4,4,4,4,4,1,1,1,1])
@@ -175,10 +172,6 @@ class GameMap():
 		pygame.draw.rect(surface, (255, 0, 255), (self.towerchoice_type1_x, self.towerchoice_y, self.towerchoice_size, self.towerchoice_size))
 		pygame.draw.rect(surface, (0, 255, 255), (self.towerchoice_type2_x, self.towerchoice_y, self.towerchoice_size, self.towerchoice_size))
 
-	def enemy_spawn(self): # spawn
-		enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
-		enemy_group.add(enemy)
-
 	def checkMouseIntentions(self, mouse_x, mouse_y):
 		"""checks, where the click was made - decides on further action"""
 		# tower type #1 chosen:
@@ -208,15 +201,8 @@ class GameMap():
 				tower_width = 30 # CHANGE to image
 				tower_height = 30 # CHANGE to image
 				gamemap.tower_place(mouse_x + 20, mouse_y + 20, tower_width, tower_height, self.tower_color, self.tower_reach)
-				# + 20: compensation for off-grid
-		# clicked on spawn button
-		elif mouse_x > 639 and mouse_x < 760 and mouse_y > 519 and mouse_y < 560:
-			print("spawn")
-			self.enemy_spawn()
+				# + 20: compensation for off-grid	
 	
-	
-	def spawnButton(self):
-		pygame.draw.rect(surface, (0, 255, 0), (639, 519, 121, 41))
 	
 	def tower_place(self, pos_x, pos_y, width, height, color, reach):
 		if self.checkGridField(pos_x, pos_y) == 4:
@@ -240,10 +226,14 @@ class GameMap():
 			#self, pos_x, pos_y, width, height, color
 
 
-	def enemy_spawn(self): # spawn
-		for i in range(self.wave_i):	# interval
-			enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
-			enemy_group.add(enemy)
+	def enemySpawn(self): # spawn
+		#if self.
+			if self.passed_ticks == 180:
+				self.passed_ticks = 0
+				enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
+				enemy_group.add(enemy)
+			else:
+				self.passed_ticks += 1
 		
 
 	""" BACKUP
@@ -259,10 +249,15 @@ class GameMap():
 		self.moneyIndicator()
 		self.healthBar()
 		self.towerChoice()
-		self.spawnButton()
+		self.enemySpawn()
 		#self.checkTowerRange(Enemy, Tower)
 		#self.detectDamage()
 		#self.showDeveloperStuff()
+
+
+
+
+
 
 	def checkGridField(self, mouse_x, mouse_y):
 		"""checks clicked field in grid; finds the value in gamemap (numbers = grid coordinates)"""
@@ -284,7 +279,6 @@ class GameMap():
 
 
 
-
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, pos_x, pos_y, width, height, color, health, image): #TODO: movement speed, type
 		super().__init__()		
@@ -293,72 +287,107 @@ class Enemy(pygame.sprite.Sprite):
 		self.rect.center = [pos_x, pos_y]
 		self.pos_x = gamemap.start_point_x
 		self.pos_y = gamemap.start_point_y
-		self.movement_cooldown = 0
-		self.lookingForPath = True
+		self.clock = 0
+		self.movement_var = 0 # 0 = look for path; 1 = up, 2 = right, 3 = down, 4 = left
+		self.moved_pixels = 0
 		self.goRightOk = True
 		self.goLeftOk = True
 		self.goUpOk = True
 		self.goDownOk = True
 		#self.current_health = 50	# TODO: health system
+	
 
 
 	def findPath(self):
 		if self.goRightOk == True:
-			if gamemap.checkGridField(self.pos_x + 40, self.pos_y) == 0:
-				print("Going RIGHT")
-				self.lookingForPath = False
-				self.goLeftOk = False
-				for i in range(40):
-					self.rect.move_ip(1, 0)
-					self.pos_x += 1
-				self.lookingForPath = True
+			if gamemap.checkGridField(self.pos_x + 21, self.pos_y) == 0:
+				self.movement_var = 2
+				self.goLeftOk = False 	# protection against turning 180° and returning via same path; will be unlocked again by finishing movement to a non-opposite direction
 				self.goRightOk = True
 				self.goUpOk = True
 				self.goDownOk = True
+				return
 		if self.goLeftOk == True:
-			if gamemap.checkGridField(self.pos_x - 40, self.pos_y) == 0:
-				print("Going LEFT")
-				self.lookingForPath = False
+			if gamemap.checkGridField(self.pos_x - 21, self.pos_y) == 0:
+				self.movement_var = 4
 				self.goRightOk = False
-				for i in range(40):
-					self.rect.move_ip(-1, 0)
-					self.pos_x -= 1
-				self.lookingForPath = True
 				self.goLeftOk = True
 				self.goUpOk = True
 				self.goDownOk = True
+				return
 		if self.goUpOk == True:
-			if gamemap.checkGridField(self.pos_x, self.pos_y - 40) == 0:
-				print("Going UP")
-				self.lookingForPath = False
+			if gamemap.checkGridField(self.pos_x, self.pos_y - 21) == 0:
+				self.movement_var = 1
 				self.goDownOk = False
-				for i in range(40):
-					self.rect.move_ip(0, -1)
-					self.pos_y -= 1
-				self.lookingForPath = True
 				self.goRightOk = True
 				self.goLeftOk = True
 				self.goUpOk = True
+				return
 		if self.goDownOk == True:
-			if gamemap.checkGridField(self.pos_x, self.pos_y + 40) == 0:
-				print("Going DOWN")
-				self.lookingForPath = False
-				self.goUpOk = False
-				for i in range(40):					
-					self.rect.move_ip(0, 1)
-					self.pos_y += 1
-				self.lookingForPath = True					
+			if gamemap.checkGridField(self.pos_x, self.pos_y + 21) == 0:
+				self.movement_var = 3
+				self.goUpOk = False				
 				self.goRightOk = True
 				self.goLeftOk = True
 				self.goDownOk = True
+				return
+		
+		
+	def moveRight(self):
+		if self.moved_pixels <= 39:
+			self.moved_pixels += 1
+			self.rect.move_ip(1, 0)
+			self.pos_x += 1	
+		else:
+			self.movement_var = 0
+			self.moved_pixels = 0
+	
+	def moveLeft(self):
+		if self.moved_pixels <= 39:
+			self.moved_pixels += 1
+			self.rect.move_ip(-1, 0)
+			self.pos_x -= 1
+		else:
+			self.movement_var = 0
+			self.moved_pixels = 0
+			
+	def moveUp(self):
+		if self.moved_pixels <= 39:
+			self.moved_pixels += 1
+			self.rect.move_ip(0, -1)
+			self.pos_y -= 1	
+		else:
+			self.movement_var = 0
+			self.moved_pixels = 0	
+
+	def moveDown(self):			
+		if self.moved_pixels <= 39:
+			self.moved_pixels += 1
+			self.rect.move_ip(0, 1)
+			self.pos_y += 1
+		else:
+			self.movement_var = 0
+			self.moved_pixels = 0
+	
+	
+	
 		
 		
 	def drawEnemy(self, surface): # draw enemy
 		pygame.draw.rect(surface, (0, 0, 0), self.rect)
 
 	def update(self):
-		if self.lookingForPath == True:
+		if self.movement_var == 0:
 			self.findPath()
+		if self.movement_var == 1:
+			self.moveUp()
+		if self.movement_var == 2:
+			self.moveRight()
+		if self.movement_var == 3:
+			self.moveDown()
+		if self.movement_var == 4:
+			self.moveLeft()
+			
 		"""
 		if pygame.sprite.spritecollide(self, gamemap.end_hitbox, True):
 			print("reached the end")
@@ -485,10 +514,10 @@ while running:
 			if pygame.sprite.spritecollide(tower, enemy_group, True):
 				print("hit a tower - enemy despawning .......................")
 			
-		"""
-		if pygame.sprite.spritecollide(enemy, gamemap.end_hitbox, True):
-			print("reached the end")
-		"""	
+		for enemy in enemy_group:
+			if enemy.rect.colliderect(gamemap.end_hitbox):
+				print("reached the end")
+
 			
 			
 			
@@ -522,6 +551,7 @@ while running:
 	
 	tower_group.draw(surface)
 	tower_group.update() # group.update? 
+	
 	
 	
 	pygame.display.update()
