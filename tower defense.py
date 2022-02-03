@@ -41,8 +41,10 @@ enemy_type3 = pygame.image.load('enemies/kubelwagen_right.png')
 enemy_type3_d = pygame.image.load('enemies/kubelwagen_d_right.png')
 
 tower_type1 = pygame.image.load('towers/tower_1.png')
+tower_type2 = pygame.image.load('towers/tower_2.png')
 
 bullet_type1 = pygame.image.load('bullets/bullet_1.png')
+bullet_type2 = pygame.image.load('bullets/bullet_2.png')
 
 
 enemy_group = pygame.sprite.Group()
@@ -79,7 +81,7 @@ class GameMap():
 	def __init__(self):
 		self.current_health = 100	# current health
 		self.maximum_health = 100	# maximum health
-		self.current_money = 100 # money
+		self.current_money = 40 # money
 		self.health_bar_length = 180
 		self.health_ratio = self.maximum_health / self.health_bar_length # for optimal health bar appearence
 		self.end_hitbox = pygame.Rect(570, 400, 30, 40) # hitbox for obtaining damage
@@ -185,8 +187,10 @@ class GameMap():
 			if gamemap.current_money - self.tower_price >= 0:
 				print("tower 1 chosen")
 				self.placing_tower = 1
-				self.tower_color = (255, 0, 255)
-				self.tower_reach = 50 
+				self.tower_reach = 80
+				self.tower_image = tower_type1
+				self.tower_cooldown = 10
+				self.bullet_type = 1
 			else:
 				print("not enough money!")
 		# tower type #2 chosen: 			following coordinates (self.towerchoice_type_2_x, etc) to be changed
@@ -195,23 +199,24 @@ class GameMap():
 			if gamemap.current_money - self.tower_price >= 0:
 				print("tower 2 chosen")
 				self.placing_tower = 1
-				self.tower_color = (0, 255, 255)
-				self.tower_reach = 120
+				self.tower_reach = 160
+				self.tower_image = tower_type2
+				self.tower_cooldown = 3
+				self.bullet_type = 2
 			else:
 				print("not enough money!")
 		# clicked in playing field
 		elif mouse_x < 600 and mouse_y < 600:
 			if self.placing_tower == 1:
-				 # PLACEHOLDER, change
-				tower_width = 30 # CHANGE to image
-				tower_height = 30 # CHANGE to image
-				gamemap.tower_place(mouse_x + 20, mouse_y + 20, tower_width, tower_height, self.tower_color, self.tower_reach)
-				# + 20: compensation for off-grid	
+				gamemap.tower_place(mouse_x + 20, mouse_y + 20, self.tower_reach, self.tower_image, self.tower_cooldown, self.bullet_type)
+				# + 20: compensation for off-grid
+			
 	
 	
-	def tower_place(self, pos_x, pos_y, width, height, color, reach):
+	def tower_place(self, pos_x, pos_y, reach, image, cooldown, bullet_type):
 		if self.checkGridField(pos_x, pos_y) == 4:
-			tower = Tower(pos_x, pos_y, width+80, height+80, color, reach, tower_type1, 20) # TODO
+			#(self, pos_x, pos_y, width, height, reach, image, cooldown):
+			tower = Tower(pos_x, pos_y, reach, image, cooldown, bullet_type) # TODO
 			
 			tower_group.add(tower)
 			
@@ -417,7 +422,7 @@ class Enemy(pygame.sprite.Sprite):
 		
 
 class Tower(pygame.sprite.Sprite):
-	def __init__(self, pos_x, pos_y, width, height, color, reach, image, cooldown): #TODO: cost, type, fire_delay
+	def __init__(self, pos_x, pos_y, reach, image, cooldown, bullet_type):
 		super().__init__()
 		self.cooldown = cooldown
 		self.pos_x = pos_x
@@ -426,8 +431,9 @@ class Tower(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = [pos_x, pos_y]
 		self.know_target = False
-		self.range_box = (pos_x, pos_y, (width+reach), (height+reach))
 		self.shot_elapsed_time = cooldown
+		self.bullet_type = bullet_type
+		self.reach = reach
 			
 			
 	""" CURRENTLY NOT NEEDED, MIGHT BE NEEDED SOMETIME	
@@ -464,7 +470,10 @@ class Tower(pygame.sprite.Sprite):
 	def shoot(self, target_x, target_y):
 		if self.shot_elapsed_time > self.cooldown:		
 			#print("pew pew, target is X"+str(target_x)+" Y"+str(target_y))
-			bullet = Bullet(self.pos_x, self.pos_y, target_x, target_y, bullet_type1)
+			if self.bullet_type == 1:
+				bullet = Bullet(self.pos_x, self.pos_y, target_x, target_y, bullet_type1, self.reach)
+			if self.bullet_type == 2:
+				bullet = Bullet(self.pos_x, self.pos_y, target_x, target_y, bullet_type2, self.reach)
 			bullet_group.add(bullet)
 			self.shot_elapsed_time = 0
 		else:
@@ -478,23 +487,26 @@ class Tower(pygame.sprite.Sprite):
 			
 			
 class Bullet (pygame.sprite.Sprite):
-	def __init__(self, pos_x, pos_y, target_x, target_y, image):
+	def __init__(self, pos_x, pos_y, target_x, target_y, image, reach):
 		super().__init__()
 		self.start_x = pos_x
 		self.start_y = pos_y
+		self.target_x = target_x
+		self.target_y = target_y
 		self.pos_x = pos_x
 		self.pos_y = pos_y
 		self.image = image
 		self.rect = self.image.get_rect()
 		self.rect.center = [pos_x, pos_y]
+		self.reach = reach
 		
 		# calculating movement vectors
-		self.vector_x = (target_x - pos_x) * 0.05
-		self.vector_y = (target_y - pos_y) * 0.05
+		self.vector_x = (self.target_x - self.pos_x) * 0.05
+		self.vector_y = (self.target_y - self.pos_y) * 0.05
 			
 	def update(self):
 		self.move()
-		if self.pos_x < (self.start_x - 200) or self.pos_x > (self.start_x + 200) or self.pos_y < (self.start_y - 200) or self.pos_y > (self.start_y + 200):
+		if self.pos_x < (self.start_x - self.reach) or self.pos_x > (self.start_x + self.reach) or self.pos_y < (self.start_y - self.reach) or self.pos_y > (self.start_y + self.reach):
 			# max flying range of bullet
 			pygame.sprite.Sprite.kill(self)
 	
@@ -587,17 +599,10 @@ while running:
 		for enemy in enemy_group:
 			if pygame.sprite.spritecollide(enemy, bullet_group, True):
 				print("ENEMY HIT!")
+				gamemap.getMoney(1)
 					
 				
 	
-	
-			
-	# FOLLOWING IS FOR TESTING PURPOSES ONLY
-	if event.type == pygame.KEYDOWN:	# TODO: link with wave spawn/kill/whatever
-		if event.key == pygame.K_g:
-			gamemap.getMoney(20)
-
-
 	surface.fill((255, 255, 255))
 	
 	gamemap.drawMap(surface)
