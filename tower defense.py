@@ -59,22 +59,6 @@ tick_time = 180
 wave_delay_list = [1*tick_time, 3*tick_time, 3*tick_time]
 wave_enemycount_list = [0, 2, 3, 5, 7]
 
-"""
-wave_1 = ["A","A","A","A","A"]
-wave_2 = [A,A,A,A,A,A,A,A,A]
-wave_3 = [A,A,A,A,A,B,B]
-wave_4 = [A,A,A,A,B,B,B,B,B]
-wave_5 = [B,B,B,B,B,B,B]
-wave_6 = [B,B,B,B,B,B,B,C,C]
-wave_7 = [B,B,B,C,C,C,C]
-wave_8 = [C,C,C,C,C,C,C,C,C]
-wave_9 = [C,C,C,D] # boss
-"""
-
-
-
-
-
 
 
 class GameMap():
@@ -261,18 +245,6 @@ class GameMap():
 		
 		
 	
-
-
-
-	""" BACKUP
-	def tower_place(self):
-		tower = Tower(420, 400, 30, 30, (255, 0, 255))
-		tower_group.add(tower)
-		print("tower placed")
-		#self, pos_x, pos_y, width, height, colo
-	"""
-
-
 	def update(self):
 		self.moneyIndicator()
 		self.healthBar()
@@ -294,14 +266,6 @@ class GameMap():
 		self.grid_value = (self.levelMap[self.grid_field_y][self.grid_field_x])
 		return self.grid_value
 		
-	"""
-	def checkTowerRange(self, enemy, tower):
-		in_range = pygame.sprite.collide_rect(Enemy, Tower)
-		if in_range == True:
-			print("in range")
-	"""
-
-
 	def showDeveloperStuff(self):
 		pygame.draw.rect(surface, (255, 154, 0), self.end_hitbox) #HITBOX END
 
@@ -517,34 +481,6 @@ class Bullet (pygame.sprite.Sprite):
 		# movement along Y axis:
 		self.rect.move_ip(0, self.vector_y)
 		self.pos_y += self.vector_y
-		
-		
-"""		
-	def fire(self):
-		for i in range(50): #TODO: replace 50 with "fire_delay": every x pygame cycles, the tower fires
-			self.delay_counter+=1
-		self.delay_counter = 0
-		
-
-	def checkForEnemies (self):
-		in_reach = self.reach_circle.colliderect()
-		if in_reach:
-			print ("enemy in reach")
-			self.fire() #TODO: different settings (closest, strongest)
-"""
-
-		
-		
-	
-
-
-
-	
-	
-	
-	
-	
-	
 	
 	
 	
