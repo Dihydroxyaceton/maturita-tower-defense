@@ -430,7 +430,7 @@ class Tower(pygame.sprite.Sprite):
 		self.target_y = target_y
 		if tower.know_target == False:
 			#print("ENEMY IN RANGE!")
-			print(str(target_x), str(target_y))
+			#print(str(target_x), str(target_y))
 			self.know_target = True
 
 
