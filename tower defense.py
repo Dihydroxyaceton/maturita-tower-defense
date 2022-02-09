@@ -208,40 +208,40 @@ class GameMap():
 	def enemySpawn(self): # spawn
 		
 			#print(str(self.wave_pause) + str(self.spawned_in_wave))
-			self.spawn_delay = (wave_list[self.current_wave][0]) * tick_time
-			self.ground_enemies_count = wave_list[self.current_wave][1]
-			self.air_enemies_count = wave_list[self.current_wave][2]
-			
+			if self.current_wave < len(wave_list):
+				self.spawn_delay = (wave_list[self.current_wave][0]) * tick_time
+				self.ground_enemies_count = wave_list[self.current_wave][1]
+				self.air_enemies_count = wave_list[self.current_wave][2]
+			else:
+				print("GAME OVER")
+				self.do_spawn = False
+				self.passed_ticks = 0
+				running = False
 			if self.passed_ticks >= self.spawn_delay:
-				print (str(self.current_wave),str(len(wave_list)))
-				if self.current_wave < len(wave_list):
-					if self.do_spawn == True:
-						self.passed_ticks = 0
-						if self.spawned_ground_enemies < self.ground_enemies_count:		
-							enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
+				if self.do_spawn == True:
+					self.passed_ticks = 0
+					if self.spawned_ground_enemies < self.ground_enemies_count:		
+						enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
+						enemy_group.add(enemy)
+						self.spawned_ground_enemies += 1
+					else:	# hierarchy states order of spawning (in our case ground first, air thereafter)
+						if self.spawned_air_enemies < self.air_enemies_count:
+							enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 200, enemy_type2)
 							enemy_group.add(enemy)
-							self.spawned_ground_enemies += 1
-						else:	# hierarchy states order of spawning (in our case ground first, air thereafter)
-							if self.spawned_air_enemies < self.air_enemies_count:
-								enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 200, enemy_type2)
-								enemy_group.add(enemy)
-								self.spawned_air_enemies += 1
-							else:
-								self.do_spawn = False
-								self.spawned_ground_enemies = 0
-								self.spawned_air_enemies = 0
-								print("END WAVE "+str(self.current_wave)+", NEXT WAVE IN 5 SECONDS")
-					else:
-						if self.wave_pause >= 900:
-							self.wave_pause = 0
-							self.do_spawn = True
-							self.current_wave += 1
-							print("STARTING WAVE "+str(self.current_wave))
+							self.spawned_air_enemies += 1
 						else:
-							self.wave_pause += 1
+							self.do_spawn = False
+							self.spawned_ground_enemies = 0
+							self.spawned_air_enemies = 0
+							print("END WAVE "+str(self.current_wave)+", NEXT WAVE IN 5 SECONDS")
 				else:
-					print("GAME OVER")
-					running = False		
+					if self.wave_pause >= 900:
+						self.wave_pause = 0
+						self.do_spawn = True
+						self.current_wave += 1
+						print("STARTING WAVE "+str(self.current_wave))
+					else:
+						self.wave_pause += 1
 			else:
 				self.passed_ticks += 1
 		
