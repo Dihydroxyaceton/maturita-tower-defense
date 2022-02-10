@@ -526,7 +526,7 @@ while running:
 			print("grid aligned y: "+str(mouse_y)) # aligned to grid
 			gamemap.checkMouseIntentions(mouse_x, mouse_y)
 			
-
+	"""
 	for enemy in enemy_group:	
 		for tower in tower_group:
 			if tower.know_target == False:
@@ -534,6 +534,13 @@ while running:
 					tower.findTarget(enemy.pos_x, enemy.pos_y)
 				else:
 					tower.know_target = False
+	"""				
+	
+	for tower in tower_group:
+		enemy_colliding = pygame.sprite.spritecollide(tower, enemy_group, False)
+		for enemy in enemy_colliding:
+			tower.findTarget(enemy.pos_x, enemy.pos_y)
+			break
 
 	
 	for bullet in bullet_group:
