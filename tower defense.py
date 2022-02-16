@@ -1,54 +1,47 @@
 import pygame
 import os
-import numpy
 import math
-import time
 import gamemap2 as level_file
-from random import randint
 
 """ 
-classes:
 
-  enemy
-    attributes: health, movement speed, type (hidden / air / ...), location, size
-    methodes: movement, detecting and obtaining damage, spawning, despawning
-    
-  game (player)
-    attributes: health, map, money
-    methodes: detecting and obtaining damage
-    
-  tower
-    attributes: type, cadency, cost, name, location
-    methodes: firing
-  
-  bullet
-    attributes: type, damage, location
-    methodes: dealing damage
-    
-    
-    
-    
-    
-    
 https://www.youtube.com/watch?v=TqbtxBntuF0&t=105s    
     
 """
 
 
 
-# defining images for enemies and towers:
+# defining textures and stats:
 
-enemy_type3 = pygame.image.load('enemies/kubelwagen_right.png')
-enemy_type3_d = pygame.image.load('enemies/kubelwagen_d_right.png')
+grass_texture = pygame.image.load('ground_textures/grass.png')
+road_texture = pygame.image.load('ground_textures/road.png')
+stone_texture = pygame.image.load('ground_textures/stone.png')
 
-enemy_type2 = pygame.image.load('enemies/bf_right.png')
-enemy_type2_d = pygame.image.load('enemies/bf_d_right.png')
+enemy_type1_image = pygame.image.load('enemies/kubelwagen_right.png')
+enemy_type2_image = pygame.image.load('enemies/bf_right.png')
 
-tower_type1 = pygame.image.load('towers/tower_1.png')
-tower_type2 = pygame.image.load('towers/tower_2.png')
+tower_type1_image = pygame.image.load('towers/tower_1.png')
+tower_type2_image = pygame.image.load('towers/tower_2.png')
 
-bullet_type1 = pygame.image.load('bullets/bullet_1.png')
-bullet_type2 = pygame.image.load('bullets/bullet_2.png')
+bullet_type1_image = pygame.image.load('bullets/bullet_1.png')
+bullet_type2_image = pygame.image.load('bullets/bullet_2.png')
+
+
+enemy_type1 = [enemy_type1_image, 100]
+enemy_type2 = [enemy_type2_image, 500]
+# tuple structure: image, health
+
+tower_type1 = [tower_type1_image, 100, 1, 20]
+tower_type2 = [tower_type2_image, 80, 2, 100, 90]
+# tuple structure: image, cooldown, bullet type, cost, (upgrade price)]
+
+bullet_type1 = [bullet_type1_image, 80, 20]
+bullet_type2 = [bullet_type2_image, 160, 25]
+# tuple structure: image, range, damage
+
+
+
+#gamemap.tower_place(mouse_x + 20, mouse_y + 20, self.tower_reach, self.tower_image, self.tower_cooldown, self.bullet_type, self.damage)
 
 
 enemy_group = pygame.sprite.Group()
@@ -98,15 +91,11 @@ class GameMap():
 		for x in range(15):
 			for y in range(15):
 				if (self.levelMap[x][y]==1): # empty tiles
-					pygame.draw.rect(surface, (64, 64, 64), (y*40, x*40, 40, 40))
-				elif (self.levelMap[x][y]==2): # start
-					pygame.draw.rect(surface, (0, 255, 0), (y*40, x*40, 40, 40))
-				elif (self.levelMap[x][y]==3): # finish
-					pygame.draw.rect(surface, (255, 0, 0), (y*40, x*40, 40, 40))
+					surface.blit(grass_texture, (y*40, x*40))
 				elif (self.levelMap[x][y]==4): # tiles for placing towers
-					pygame.draw.rect(surface, (139, 105, 20), (y*40, x*40, 40, 40))	
+					surface.blit(stone_texture, (y*40, x*40))
 				elif (self.levelMap[x][y]==0): # road
-					pygame.draw.rect(surface, (0, 128, 0), (y*40, x*40, 40, 40))
+					surface.blit(road_texture, (y*40, x*40))
 					
 	def detectDamage(self):		# TODO: add "amount" (damage system - different enemy types)
 		"""detecting enemy reaching the end of the map"""
@@ -155,59 +144,57 @@ class GameMap():
 		"""checks, where the click was made - decides on further action"""
 		# tower type #1 chosen:
 		if mouse_x > (self.towerchoice_type1_x) and mouse_x < (self.towerchoice_type1_x + self.towerchoice_size) and mouse_x > (self.towerchoice_y) and mouse_y < (self.towerchoice_y + self.towerchoice_size):
-			self.tower_price = 20 # PLACEHOLDER, change
-			if gamemap.current_money - self.tower_price >= 0:
+			self.tower_price = tower_type1[3]
+			if gamemap.current_money - self.tower_price >= 0: # checking if enough money
 				print("tower 1 chosen")
 				self.placing_tower = 1
-				self.tower_reach = 80
-				self.tower_image = tower_type1
-				self.tower_cooldown = 10
-				self.bullet_type = 1
-				self.damage = 10
 			else:
 				print("not enough money!")
-		# tower type #2 chosen: 			following coordinates (self.towerchoice_type_2_x, etc) to be changed
+		# tower type #2 chosen:
 		elif mouse_x > (self.towerchoice_type2_x) and mouse_x < (self.towerchoice_type2_x + self.towerchoice_size) and mouse_x > (self.towerchoice_y) and mouse_y < (self.towerchoice_y + self.towerchoice_size):
-			self.tower_price = 50 # PLACEHOLDER, change
-			if gamemap.current_money - self.tower_price >= 0:
+			self.tower_price = tower_type2[3]
+			if gamemap.current_money - self.tower_price >= 0: # checking if enough money
 				print("tower 2 chosen")
-				self.placing_tower = 1
-				self.tower_reach = 160
-				self.tower_image = tower_type2
-				self.tower_cooldown = 3
-				self.bullet_type = 2
-				self.damage = 20
+				self.placing_tower = 2
 			else:
 				print("not enough money!")
 		# clicked in playing field
 		elif mouse_x < 600 and mouse_y < 600:
-			if self.placing_tower == 1:
-				gamemap.tower_place(mouse_x + 20, mouse_y + 20, self.tower_reach, self.tower_image, self.tower_cooldown, self.bullet_type, self.damage)
+			if self.placing_tower == 1 or self.placing_tower == 2:
+				self.tower_place(mouse_x + 20, mouse_y + 20)
 				# + 20: compensation for off-grid
-			
-	
-	
-	def tower_place(self, pos_x, pos_y, reach, image, cooldown, bullet_type, damage):
+			elif self.checkGridField(mouse_x, mouse_y == 91):
+				if gamemap.current_money - tower_type2[4] >= 0: # checking if enough money
+					self.tower_upgrade(mouse_x, mouse_y)
+				else:
+					print("NOT ENOUGH MONEY FOR UPGRADE")
+
+	def tower_place(self, pos_x, pos_y):
 		if self.checkGridField(pos_x, pos_y) == 4:
-			#(self, pos_x, pos_y, width, height, reach, image, cooldown):
-			tower = Tower(pos_x, pos_y, reach, image, cooldown, bullet_type, damage)
-			
-			tower_group.add(tower)
-			
-			
-			# TODO: add protection against placing atop of another tower
+			if self.placing_tower == 1:
+				tower = Tower(pos_x, pos_y, tower_type1[0], tower_type1[1], tower_type1[2])
+				tower_group.add(tower)
+				self.levelMap[math.floor(mouse_y / 40)][math.floor(mouse_x / 40)] = 91 # marks the grid field as occupied by tower type 1
+			if self.placing_tower == 2:
+				tower = Tower(pos_x, pos_y, tower_type2[0], tower_type2[1], tower_type2[2])
+				tower_group.add(tower)
+				self.levelMap[math.floor(mouse_y / 40)][math.floor(mouse_x / 40)] = 92 # marks the grid field as occupied by tower type 2
 			print("tower placed")
-			gamemap.spendMoney(self.tower_price)
+			self.spendMoney(self.tower_price)
 			self.placing_tower = 0
 		else:
 			print("invalid position!")	
-		
-			#self, pos_x, pos_y, width, height, color
 
+	def tower_upgrade(self, pos_x, pos_y):
+		for tower in tower_group:
+			if (math.floor(mouse_x / 40)) == (math.floor(tower.pos_x / 40)) and (math.floor(mouse_y / 40)) == (math.floor(tower.pos_y / 40)): # checks for the particular tower to upgrade
+				pygame.sprite.Sprite.kill(tower)
+				print("tower upgraded")
+				self.spendMoney(tower_type2[4])
+				tower = Tower(pos_x + 20, pos_y + 20, tower_type2[0], tower_type2[1], tower_type2[2])
+				tower_group.add(tower)
 
 	def enemySpawn(self): # spawn
-		
-			#print(str(self.wave_pause) + str(self.spawned_in_wave))
 			if self.current_wave < len(wave_list):
 				self.spawn_delay = (wave_list[self.current_wave][0]) * tick_time
 				self.ground_enemies_count = wave_list[self.current_wave][1]
@@ -221,12 +208,12 @@ class GameMap():
 				if self.do_spawn == True:
 					self.passed_ticks = 0
 					if self.spawned_ground_enemies < self.ground_enemies_count:		
-						enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 100, enemy_type3)
+						enemy = Enemy(20, 100, enemy_type1[0], enemy_type1[1])
 						enemy_group.add(enemy)
 						self.spawned_ground_enemies += 1
 					else:	# hierarchy states order of spawning (in our case ground first, air thereafter)
 						if self.spawned_air_enemies < self.air_enemies_count:
-							enemy = Enemy(20, 100, 30, 30, (255, 0, 0), 200, enemy_type2)
+							enemy = Enemy(20, 100, enemy_type2[0], enemy_type2[1])
 							enemy_group.add(enemy)
 							self.spawned_air_enemies += 1
 						else:
@@ -267,14 +254,17 @@ class GameMap():
 		self.grid_field_y = math.floor(mouse_y / 40)
 		self.grid_value = (self.levelMap[self.grid_field_y][self.grid_field_x])
 		return self.grid_value
-		
+	
+	def editGridField(self, x, y, amount):
+		print(self.levelMap)
+	
 	def showDeveloperStuff(self):
 		pygame.draw.rect(surface, (255, 154, 0), self.end_hitbox) #HITBOX END
 
 
 
 class Enemy(pygame.sprite.Sprite):
-	def __init__(self, pos_x, pos_y, width, height, color, health, image): #TODO: movement speed, type
+	def __init__(self, pos_x, pos_y, image, health): #TODO: movement speed, type
 		super().__init__()		
 		self.image = image
 		self.rect = self.image.get_rect()
@@ -388,7 +378,7 @@ class Enemy(pygame.sprite.Sprite):
 		
 
 class Tower(pygame.sprite.Sprite):
-	def __init__(self, pos_x, pos_y, reach, image, cooldown, bullet_type, damage):
+	def __init__(self, pos_x, pos_y, image, cooldown, bullet_type):
 		super().__init__()
 		self.cooldown = cooldown
 		self.pos_x = pos_x
@@ -399,32 +389,7 @@ class Tower(pygame.sprite.Sprite):
 		self.know_target = False
 		self.shot_elapsed_time = cooldown
 		self.bullet_type = bullet_type
-		self.reach = reach
-		self.damage = damage
 			
-			
-	""" CURRENTLY NOT NEEDED, MIGHT BE NEEDED SOMETIME	
-	def drawMemory(self, surface):
-		# creates the memory to remember whether a tower can be placed or not
-		# 0 = vacant place; 1 = occupied (either by a tower or a cliff)
-		self.towerMemory=[]
-		self.towerMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-		self.towerMemory.append([1,0,1,1,1,0,0,1,1,1,1,1,1,1,1])
-		self.towerMemory.append([1,1,1,0,1,1,0,1,1,0,0,0,0,0,1])
-		self.towerMemory.append([1,1,0,0,0,1,0,1,1,0,1,1,1,0,1])
-		self.towerMemory.append([1,1,1,0,0,1,0,1,1,0,1,0,1,0,1])
-		self.towerMemory.append([1,0,0,0,1,1,0,1,0,0,1,0,1,0,1])
-		self.towerMemory.append([1,0,1,1,1,0,0,0,0,0,1,0,1,0,1])
-		self.towerMemory.append([1,0,1,0,0,0,0,0,0,0,1,0,1,0,1])
-		self.towerMemory.append([1,0,1,1,1,1,1,0,0,1,1,0,1,0,1])
-		self.towerMemory.append([1,0,0,0,0,0,1,1,1,1,0,0,1,0,1])
-		self.towerMemory.append([1,1,0,0,1,0,1,0,1,1,0,0,1,1,1])
-		self.towerMemory.append([1,1,1,1,1,1,1,0,0,1,0,0,0,0,1])
-		self.towerMemory.append([1,1,1,1,1,0,1,1,1,1,0,0,1,1,1])
-		self.towerMemory.append([1,1,1,1,1,0,0,0,0,0,0,1,1,1,1])
-		self.towerMemory.append([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-	"""
-
 	def findTarget(self, target_x, target_y):
 		self.target_x = target_x
 		self.target_y = target_y
@@ -436,11 +401,10 @@ class Tower(pygame.sprite.Sprite):
 
 	def shoot(self, target_x, target_y):
 		if self.shot_elapsed_time > self.cooldown:		
-			#print("pew pew, target is X"+str(target_x)+" Y"+str(target_y))
 			if self.bullet_type == 1:
-				bullet = Bullet(self.pos_x, self.pos_y, target_x, target_y, bullet_type1, self.reach, self.damage)
+				bullet = Bullet(self.pos_x, self.pos_y, target_x, target_y, bullet_type1[0], bullet_type1[1], bullet_type1[2])
 			if self.bullet_type == 2:
-				bullet = Bullet(self.pos_x, self.pos_y, target_x, target_y, bullet_type2, self.reach, self.damage)
+				bullet = Bullet(self.pos_x, self.pos_y, target_x, target_y, bullet_type2[0], bullet_type2[1], bullet_type2[2])
 			bullet_group.add(bullet)
 			self.shot_elapsed_time = 0
 			self.know_target = False
@@ -498,17 +462,12 @@ surface = pygame.display.set_mode((800, 600)) # screen initialisation, TODO: mov
 
 pygame.display.set_caption("soon to be TOWER DEFENSE") # window name
 
-
-
 gamemap = GameMap()
 
 clock = pygame.time.Clock()
 
-
-
 running = True  
 
-     
 while running:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -516,41 +475,22 @@ while running:
 			
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			mouse_x_raw, mouse_y_raw = pygame.mouse.get_pos()
-			print("raw click x: "+str(mouse_x_raw)) # RAW data: not for grid
-			print("raw click y: "+str(mouse_y_raw)) # RAW data: not for grid
 			mouse_x = (math.floor(mouse_x_raw / 40) * 40)
 			mouse_y = (math.floor(mouse_y_raw / 40) * 40)
-			print("grid x: "+str((math.floor(mouse_x_raw / 40))))
-			print("grid y: "+str((math.floor(mouse_y_raw / 40))))
-			print("grid aligned x: "+str(mouse_x)) # aligned to grid
-			print("grid aligned y: "+str(mouse_y)) # aligned to grid
 			gamemap.checkMouseIntentions(mouse_x, mouse_y)
-			
-	"""
-	for enemy in enemy_group:	
-		for tower in tower_group:
-			if tower.know_target == False:
-				if pygame.sprite.spritecollide(tower, enemy_group, False):
-					tower.findTarget(enemy.pos_x, enemy.pos_y)
-				else:
-					tower.know_target = False
-	"""				
-	
+				
 	for tower in tower_group:
 		enemy_colliding = pygame.sprite.spritecollide(tower, enemy_group, False)
 		for enemy in enemy_colliding:
 			tower.findTarget(enemy.pos_x, enemy.pos_y)
 			break
 
-	
 	for bullet in bullet_group:
 		for enemy in enemy_group:
 			if pygame.sprite.spritecollide(enemy, bullet_group, True):
 				print("ENEMY HIT!")
 				enemy.getHit(bullet.damage)
-					
-				
-	
+
 	surface.fill((255, 255, 255))
 	
 	gamemap.drawMap(surface)
@@ -565,16 +505,8 @@ while running:
 	bullet_group.draw(surface)
 	bullet_group.update()
 	
-	
 	pygame.display.update()
 
 	clock.tick(tick_time)
 
-
-
-
-
 pygame.quit()
-
-
-
