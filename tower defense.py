@@ -21,7 +21,9 @@ enemy_type1_image = pygame.image.load('enemies/kubelwagen_right.png')
 enemy_type2_image = pygame.image.load('enemies/bf_right.png')
 
 tower_type1_image = pygame.image.load('towers/tower_1.png')
+tower_type1_image_menu = pygame.image.load('towers/tower_1_menu.png')
 tower_type2_image = pygame.image.load('towers/tower_2.png')
+tower_type2_image_menu = pygame.image.load('towers/tower_2_menu.png')
 
 bullet_type1_image = pygame.image.load('bullets/bullet_1.png')
 bullet_type2_image = pygame.image.load('bullets/bullet_2.png')
@@ -137,8 +139,10 @@ class GameMap():
 
 	def towerChoice(self):
 		"""the player's ability to choose towers to place; tower goes gray when not affordable"""
-		pygame.draw.rect(surface, (255, 0, 255), (self.towerchoice_type1_x, self.towerchoice_y, self.towerchoice_size, self.towerchoice_size))
-		pygame.draw.rect(surface, (0, 255, 255), (self.towerchoice_type2_x, self.towerchoice_y, self.towerchoice_size, self.towerchoice_size))
+		#pygame.draw.rect(surface, (255, 0, 255), (self.towerchoice_type1_x, self.towerchoice_y, self.towerchoice_size, self.towerchoice_size))
+		surface.blit(tower_type1_image_menu, (self.towerchoice_type1_x, self.towerchoice_y))
+		#pygame.draw.rect(surface, (0, 255, 255), (self.towerchoice_type2_x, self.towerchoice_y, self.towerchoice_size, self.towerchoice_size))
+		surface.blit(tower_type2_image_menu, (self.towerchoice_type2_x, self.towerchoice_y))
 
 	def checkMouseIntentions(self, mouse_x, mouse_y):
 		"""checks, where the click was made - decides on further action"""
@@ -163,11 +167,11 @@ class GameMap():
 			if self.placing_tower == 1 or self.placing_tower == 2:
 				self.tower_place(mouse_x + 20, mouse_y + 20)
 				# + 20: compensation for off-grid
-			elif self.checkGridField(mouse_x, mouse_y == 91):
+			elif self.checkGridField(mouse_x, mouse_y) == 91:
 				if gamemap.current_money - tower_type2[4] >= 0: # checking if enough money
 					self.tower_upgrade(mouse_x, mouse_y)
 				else:
-					print("NOT ENOUGH MONEY FOR UPGRADE")
+					print("NOT ENOUGH MONEY FOR UPGRADE, "+str(tower_type2[4])+" NEEDED")
 
 	def tower_place(self, pos_x, pos_y):
 		if self.checkGridField(pos_x, pos_y) == 4:
@@ -394,27 +398,26 @@ class Tower(pygame.sprite.Sprite):
 		self.target_x = target_x
 		self.target_y = target_y
 		if tower.know_target == False:
-			#print("ENEMY IN RANGE!")
-			#print(str(target_x), str(target_y))
 			self.know_target = True
 
 
 	def shoot(self, target_x, target_y):
-		if self.shot_elapsed_time > self.cooldown:		
+		self.know_target = False
+		if self.shot_elapsed_time >= self.cooldown:	
 			if self.bullet_type == 1:
 				bullet = Bullet(self.pos_x, self.pos_y, target_x, target_y, bullet_type1[0], bullet_type1[1], bullet_type1[2])
 			if self.bullet_type == 2:
 				bullet = Bullet(self.pos_x, self.pos_y, target_x, target_y, bullet_type2[0], bullet_type2[1], bullet_type2[2])
 			bullet_group.add(bullet)
 			self.shot_elapsed_time = 0
-			self.know_target = False
-		else:
-			self.shot_elapsed_time += 1
 		
 
 	def update(self):
 		if self.know_target == True:
 			self.shoot(self.target_x, self.target_y)
+		if self.shot_elapsed_time < self.cooldown:
+			self.shot_elapsed_time += 1
+			
 			
 			
 			
