@@ -30,7 +30,7 @@ bullet_type2_image = pygame.image.load('bullets/bullet_2.png')
 
 
 enemy_type1 = [enemy_type1_image, 100]
-enemy_type2 = [enemy_type2_image, 500]
+enemy_type2 = [enemy_type2_image, 600]
 # tuple structure: image, health
 
 tower_type1 = [tower_type1_image, 100, 1, 20]
@@ -174,6 +174,7 @@ class GameMap():
 					print("NOT ENOUGH MONEY FOR UPGRADE, "+str(tower_type2[4])+" NEEDED")
 
 	def tower_place(self, pos_x, pos_y):
+		"""xx"""
 		if self.checkGridField(pos_x, pos_y) == 4:
 			if self.placing_tower == 1:
 				tower = Tower(pos_x, pos_y, tower_type1[0], tower_type1[1], tower_type1[2])
