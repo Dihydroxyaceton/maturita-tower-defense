@@ -30,22 +30,20 @@ bullet_type2_image = pygame.image.load('bullets/bullet_2.png')
 
 
 enemy_type1 = [enemy_type1_image, 100]
-enemy_type2 = [enemy_type2_image, 600]
-# tuple structure: image, health
+enemy_type2 = [enemy_type2_image, 400]
+# structure: image, health
 
 tower_type1 = [tower_type1_image, 100, 1, 20]
 tower_type2 = [tower_type2_image, 80, 2, 100, 90]
-# tuple structure: image, cooldown, bullet type, cost, (upgrade price)]
+# structure: image, cooldown, bullet type, cost, (upgrade price)]
 
 bullet_type1 = [bullet_type1_image, 80, 20]
 bullet_type2 = [bullet_type2_image, 160, 25]
-# tuple structure: image, range, damage
+# structure: image, range, damage
 
 
 
-#gamemap.tower_place(mouse_x + 20, mouse_y + 20, self.tower_reach, self.tower_image, self.tower_cooldown, self.bullet_type, self.damage)
-
-
+# defining entity groups
 enemy_group = pygame.sprite.Group()
 tower_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
@@ -100,7 +98,7 @@ class GameMap():
 					surface.blit(road_texture, (y*40, x*40))
 					
 	def detectDamage(self):		# TODO: add "amount" (damage system - different enemy types)
-		"""detecting enemy reaching the end of the map"""
+		"""detecting enemy reaching the end of the map, subtracting money thereafter"""
 		for enemy in enemy_group:
 			reachesEnd = enemy.colliderect(self.end_hitbox)
 			if reachesEnd == True:
@@ -119,8 +117,8 @@ class GameMap():
 		self.current_money += amount
 		
 	def spendMoney(self, amount):
-		"""subtracting money"""		# TODO: protection against going below 0
-		if self.current_money > 0: 
+		"""subtracting money"""
+		if self.current_money > 0: # protection against money under 0
 			self.current_money -= amount
 
 	def moneyIndicator(self):	
@@ -205,10 +203,11 @@ class GameMap():
 				self.ground_enemies_count = wave_list[self.current_wave][1]
 				self.air_enemies_count = wave_list[self.current_wave][2]
 			else:
-				print("GAME OVER")
-				self.do_spawn = False
-				self.passed_ticks = 0
-				running = False
+				if len(enemy_group) == 0:	# checks for emptied list of enemies after last wave
+					print("GAME OVER")
+					self.do_spawn = False
+					self.passed_ticks = 0
+					running = False
 			if self.passed_ticks >= self.spawn_delay:
 				if self.do_spawn == True:
 					self.passed_ticks = 0
@@ -216,7 +215,7 @@ class GameMap():
 						enemy = Enemy(20, 100, enemy_type1[0], enemy_type1[1])
 						enemy_group.add(enemy)
 						self.spawned_ground_enemies += 1
-					else:	# hierarchy states order of spawning (in our case ground first, air thereafter)
+					else:
 						if self.spawned_air_enemies < self.air_enemies_count:
 							enemy = Enemy(20, 100, enemy_type2[0], enemy_type2[1])
 							enemy_group.add(enemy)
@@ -283,7 +282,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.goLeftOk = True
 		self.goUpOk = True
 		self.goDownOk = True
-		self.current_health = 50	# TODO: health system
+		self.current_health = health	# TODO: health system
 	
 
 
