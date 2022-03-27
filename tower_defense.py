@@ -30,7 +30,7 @@ bullet_type2_image = pygame.image.load('bullets/bullet_2.png')
 
 
 enemy_type1 = [enemy_type1_image, 100]
-enemy_type2 = [enemy_type2_image, 400]
+enemy_type2 = [enemy_type2_image, 300]
 # structure: image, health
 
 tower_type1 = [tower_type1_image, 100, 1, 20]
@@ -38,7 +38,7 @@ tower_type2 = [tower_type2_image, 80, 2, 100, 90]
 # structure: image, cooldown, bullet type, cost, (upgrade price)]
 
 bullet_type1 = [bullet_type1_image, 80, 20]
-bullet_type2 = [bullet_type2_image, 160, 25]
+bullet_type2 = [bullet_type2_image, 160, 50]
 # structure: image, range, damage
 
 
@@ -48,18 +48,16 @@ enemy_group = pygame.sprite.Group()
 tower_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
 
-print("WELCOME TO TOWER DEFENSE, WAVE 1 IN 5 SECONDS")
-
 tick_time = 180
 
-wave_list = [(0,0,0), (2,2,0), (2,4,1), (1,5,3), (0.5,7,7)]
+wave_list = [(0,0,0), (2,2,0), (2,4,0), (2,4,1), (1,5,3), (0.5,7,7), (0.5,10,10)]
 # tuple structure: (delay between enemies, ground enemies, air enemies)
 
 class GameMap():
 	def __init__(self):
 		self.current_health = 100	# current health
 		self.maximum_health = 100	# maximum health
-		self.current_money = 40 # money
+		self.current_money = 60 # money
 		self.health_bar_length = 180
 		self.health_ratio = self.maximum_health / self.health_bar_length # for optimal health bar appearence
 		self.end_hitbox = pygame.Rect(570, 400, 30, 40) # hitbox for obtaining damage
@@ -69,16 +67,15 @@ class GameMap():
 		self.spawned_enemies = 0
 		self.do_spawn = False
 		self.current_wave = 0
-		self.spawned_ground_enemies = 0
-		self.spawned_air_enemies = 0
+		self.spawned_enemies_type1 = 0
+		self.spawned_enemies_type2 = 0
+		self.status_text = "Welcome to Tower defense. Place towers to eliminate enemies. Waves starting automatically."
 		
 		# link the following to specific tower type attributes
 		self.towerchoice_type1_x = 639 # -1 to compensate for click (click is perceived as directly on edge, wouldnt work without)
 		self.towerchoice_type2_x = 719
 		self.towerchoice_y = 119
 		self.towerchoice_size = 41
-		self.tower_price = 1
-		self.towercolor = (255, 255, 255)
 
 		
 	def drawMap(self, surface):  # TODO: structure
@@ -123,24 +120,34 @@ class GameMap():
 
 	def moneyIndicator(self):	
 		"""shows money available; for money, the player can purchase towers"""
-		myfont = pygame.font.SysFont("calibri", 20)
-		self.current_money_label = myfont.render(str(self.current_money)+'$', 1, (0, 0, 0)) # TODO: make prettier
-		surface.blit(self.current_money_label, (690 , 25))
+		font = pygame.font.SysFont("calibri", 20)
+		self.current_money_label = font.render(str(self.current_money)+'$', 1, (0, 0, 0))
+		surface.blit(self.current_money_label, (690, 25))
+		
+	def statusBar(self):
+		"""text messages to communicate with the player"""
+		font = pygame.font.SysFont("calibri", 20)
+		self.current_money_label = font.render(str(self.status_text), 1, (0, 0, 0))
+		surface.blit(self.current_money_label, (20, 608))
 
 	def healthBar(self):	
 		"""health bar of the 'castle': damaged when an enemy reaches the end of the map"""
 		pygame.draw.rect(surface, (255, 0, 0), (610, 50, self.current_health/self.health_ratio, 25))
 		pygame.draw.rect(surface, (0, 0, 0), (610, 50, self.health_bar_length, 25), 4)
-		myfont = pygame.font.SysFont("calibri", 20)
-		self.current_health_label = myfont.render(str(self.current_health)+"/"+str(self.maximum_health), 1, (0, 0, 0))
+		font = pygame.font.SysFont("calibri", 20)
+		self.current_health_label = font.render(str(self.current_health)+"/"+str(self.maximum_health), 1, (0, 0, 0))
 		surface.blit(self.current_health_label, (670 , 55))
 
 	def towerChoice(self):
-		"""the player's ability to choose towers to place; tower goes gray when not affordable"""
-		#pygame.draw.rect(surface, (255, 0, 255), (self.towerchoice_type1_x, self.towerchoice_y, self.towerchoice_size, self.towerchoice_size))
+		"""the player's ability to choose towers to place"""
+		font = pygame.font.SysFont("calibri", 20)
+		surface.blit(font.render("| $ |", 1, (0,0,0)), (678, 165))
+		# tower type 1:
 		surface.blit(tower_type1_image_menu, (self.towerchoice_type1_x, self.towerchoice_y))
-		#pygame.draw.rect(surface, (0, 255, 255), (self.towerchoice_type2_x, self.towerchoice_y, self.towerchoice_size, self.towerchoice_size))
+		surface.blit(font.render(str(tower_type1[3]), 1, (0, 0, 0)), (649, 165))
+		# tower type 2:
 		surface.blit(tower_type2_image_menu, (self.towerchoice_type2_x, self.towerchoice_y))
+		surface.blit(font.render(str(tower_type2[3]), 1, (0, 0, 0)), (724, 165))
 
 	def checkMouseIntentions(self, mouse_x, mouse_y):
 		"""checks, where the click was made - decides on further action"""
@@ -148,28 +155,32 @@ class GameMap():
 		if mouse_x > (self.towerchoice_type1_x) and mouse_x < (self.towerchoice_type1_x + self.towerchoice_size) and mouse_x > (self.towerchoice_y) and mouse_y < (self.towerchoice_y + self.towerchoice_size):
 			self.tower_price = tower_type1[3]
 			if gamemap.current_money - self.tower_price >= 0: # checking if enough money
-				print("tower 1 chosen")
+				self.status_text = "Tower type 1 chosen. Click to place."
 				self.placing_tower = 1
 			else:
-				print("not enough money!")
+				"Not enough money! "+str(tower_type1[3])+" required for tower type 1."
 		# tower type #2 chosen:
 		elif mouse_x > (self.towerchoice_type2_x) and mouse_x < (self.towerchoice_type2_x + self.towerchoice_size) and mouse_x > (self.towerchoice_y) and mouse_y < (self.towerchoice_y + self.towerchoice_size):
 			self.tower_price = tower_type2[3]
 			if gamemap.current_money - self.tower_price >= 0: # checking if enough money
-				print("tower 2 chosen")
+				self.status_text = "Tower type 2 chosen. Click to place."
 				self.placing_tower = 2
 			else:
-				print("not enough money!")
+				self.status_text = "Not enough money! "+str(tower_type2[3])+" required for tower type 2."
 		# clicked in playing field
 		elif mouse_x < 600 and mouse_y < 600:
 			if self.placing_tower == 1 or self.placing_tower == 2:
 				self.tower_place(mouse_x + 20, mouse_y + 20)
 				# + 20: compensation for off-grid
+			elif self.checkGridField(mouse_x, mouse_y) == 92:
+				self.status_text = "This tower type is not upgradeable."
 			elif self.checkGridField(mouse_x, mouse_y) == 91:
 				if gamemap.current_money - tower_type2[4] >= 0: # checking if enough money
 					self.tower_upgrade(mouse_x, mouse_y)
 				else:
-					print("NOT ENOUGH MONEY FOR UPGRADE, "+str(tower_type2[4])+" NEEDED")
+					self.status_text = "Not enough money! "+str(tower_type2[4])+" required for upgrade."
+
+				
 
 	def tower_place(self, pos_x, pos_y):
 		"""xx"""
@@ -182,17 +193,17 @@ class GameMap():
 				tower = Tower(pos_x, pos_y, tower_type2[0], tower_type2[1], tower_type2[2])
 				tower_group.add(tower)
 				self.levelMap[math.floor(mouse_y / 40)][math.floor(mouse_x / 40)] = 92 # marks the grid field as occupied by tower type 2
-			print("tower placed")
+			self.status_text = "Tower placed."
 			self.spendMoney(self.tower_price)
 			self.placing_tower = 0
 		else:
-			print("invalid position!")	
+			self.status_text = "Invalid position for tower placement!"
 
 	def tower_upgrade(self, pos_x, pos_y):
 		for tower in tower_group:
 			if (math.floor(mouse_x / 40)) == (math.floor(tower.pos_x / 40)) and (math.floor(mouse_y / 40)) == (math.floor(tower.pos_y / 40)): # checks for the particular tower to upgrade
 				pygame.sprite.Sprite.kill(tower)
-				print("tower upgraded")
+				self.status_text = "Tower upgraded."
 				self.spendMoney(tower_type2[4])
 				tower = Tower(pos_x + 20, pos_y + 20, tower_type2[0], tower_type2[1], tower_type2[2])
 				tower_group.add(tower)
@@ -200,37 +211,37 @@ class GameMap():
 	def enemySpawn(self): # spawn
 			if self.current_wave < len(wave_list):
 				self.spawn_delay = (wave_list[self.current_wave][0]) * tick_time
-				self.ground_enemies_count = wave_list[self.current_wave][1]
-				self.air_enemies_count = wave_list[self.current_wave][2]
+				self.enemies_type1_count = wave_list[self.current_wave][1]
+				self.enemies_type2_count = wave_list[self.current_wave][2]
 			else:
 				if len(enemy_group) == 0:	# checks for emptied list of enemies after last wave
-					print("GAME OVER")
+					self.status_text = "Game over! Thank you for playing Tower defense."
 					self.do_spawn = False
 					self.passed_ticks = 0
 					running = False
 			if self.passed_ticks >= self.spawn_delay:
 				if self.do_spawn == True:
 					self.passed_ticks = 0
-					if self.spawned_ground_enemies < self.ground_enemies_count:		
+					if self.spawned_enemies_type1 < self.enemies_type1_count:		
 						enemy = Enemy(20, 100, enemy_type1[0], enemy_type1[1])
 						enemy_group.add(enemy)
-						self.spawned_ground_enemies += 1
+						self.spawned_enemies_type1 += 1
 					else:
-						if self.spawned_air_enemies < self.air_enemies_count:
+						if self.spawned_enemies_type2 < self.enemies_type2_count:
 							enemy = Enemy(20, 100, enemy_type2[0], enemy_type2[1])
 							enemy_group.add(enemy)
-							self.spawned_fair_enemies += 1
+							self.spawned_enemies_type2 += 1
 						else:
 							self.do_spawn = False
 							self.spawned_ground_enemies = 0
 							self.spawned_air_enemies = 0
-							print("END WAVE "+str(self.current_wave)+", NEXT WAVE IN 5 SECONDS")
+							self.status_text = "End of wave "+str(self.current_wave)+". Next wave in 5 seconds." # TODO: 5 seconds -> variable time
 				else:
 					if self.wave_pause >= 900:
 						self.wave_pause = 0
 						self.do_spawn = True
 						self.current_wave += 1
-						print("STARTING WAVE "+str(self.current_wave))
+						self.status_text = "Starting wave " +str(self.current_wave)+"."
 					else:
 						self.wave_pause += 1
 			else:
@@ -240,6 +251,7 @@ class GameMap():
 	
 	def update(self):
 		self.moneyIndicator()
+		self.statusBar()
 		self.healthBar()
 		self.towerChoice()
 		self.enemySpawn()
@@ -435,8 +447,8 @@ class Bullet (pygame.sprite.Sprite):
 		self.damage = damage
 		
 		# calculating movement vectors
-		self.vector_x = (self.target_x - self.pos_x) * 0.05
-		self.vector_y = (self.target_y - self.pos_y) * 0.05
+		self.vector_x = (self.target_x - self.pos_x) * 0.08
+		self.vector_y = (self.target_y - self.pos_y) * 0.08
 			
 	def update(self):
 		self.move()
@@ -459,7 +471,7 @@ os.environ["SDL_VIDEO_CENTERED"] = "1"
 
 pygame.init() #pygame initialisation
 
-surface = pygame.display.set_mode((800, 600)) # screen initialisation
+surface = pygame.display.set_mode((800, 630)) # screen initialisation
 
 pygame.display.set_caption("soon to be TOWER DEFENSE") # window name
 
@@ -489,7 +501,6 @@ while running:
 	for bullet in bullet_group:
 		for enemy in enemy_group:
 			if pygame.sprite.spritecollide(enemy, bullet_group, True):
-				print("ENEMY HIT!")
 				enemy.getHit(bullet.damage)
 
 	surface.fill((255, 255, 255))
