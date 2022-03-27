@@ -81,11 +81,11 @@ class GameMap():
 		self.towercolor = (255, 255, 255)
 
 		
-	def drawMap(self, surface):  # TODO: structure, multiple levels
+	def drawMap(self, surface):  # TODO: structure
 		"""draws the map"""
 		self.levelMap=level_file.levelMap
 		
-		self.start_point_x = 20 # TODO: not absolute number
+		self.start_point_x = 20
 		self.start_point_y = 100
 		
 		for x in range(15):
@@ -219,7 +219,7 @@ class GameMap():
 						if self.spawned_air_enemies < self.air_enemies_count:
 							enemy = Enemy(20, 100, enemy_type2[0], enemy_type2[1])
 							enemy_group.add(enemy)
-							self.spawned_air_enemies += 1
+							self.spawned_fair_enemies += 1
 						else:
 							self.do_spawn = False
 							self.spawned_ground_enemies = 0
@@ -243,8 +243,6 @@ class GameMap():
 		self.healthBar()
 		self.towerChoice()
 		self.enemySpawn()
-		#self.checkTowerRange(Enemy, Tower)
-		#self.detectDamage()
 		#self.showDeveloperStuff()
 
 
@@ -268,7 +266,7 @@ class GameMap():
 
 
 class Enemy(pygame.sprite.Sprite):
-	def __init__(self, pos_x, pos_y, image, health): #TODO: movement speed, type
+	def __init__(self, pos_x, pos_y, image, health):
 		super().__init__()		
 		self.image = image
 		self.rect = self.image.get_rect()
@@ -282,7 +280,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.goLeftOk = True
 		self.goUpOk = True
 		self.goDownOk = True
-		self.current_health = health	# TODO: health system
+		self.current_health = health
 	
 
 
@@ -461,7 +459,7 @@ os.environ["SDL_VIDEO_CENTERED"] = "1"
 
 pygame.init() #pygame initialisation
 
-surface = pygame.display.set_mode((800, 600)) # screen initialisation, TODO: move to class
+surface = pygame.display.set_mode((800, 600)) # screen initialisation
 
 pygame.display.set_caption("soon to be TOWER DEFENSE") # window name
 
