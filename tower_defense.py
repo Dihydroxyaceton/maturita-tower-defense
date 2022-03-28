@@ -1,7 +1,12 @@
 import pygame
 import os
 import math
-import gamemap2 as level_file
+if chosen_map == 1:
+	import gamemap1 as level_file
+if chosen_map == 2:
+	import gamemap2 as level_file
+if chosen_map == 3:
+	import gamemap3 as level_file
 
 """ 
 
@@ -30,7 +35,7 @@ bullet_type2_image = pygame.image.load('bullets/bullet_2.png')
 
 
 enemy_type1 = [enemy_type1_image, 100]
-enemy_type2 = [enemy_type2_image, 300]
+enemy_type2 = [enemy_type2_image, 220]
 # structure: image, health
 
 tower_type1 = [tower_type1_image, 100, 1, 20]
@@ -473,7 +478,7 @@ pygame.init() #pygame initialisation
 
 surface = pygame.display.set_mode((800, 630)) # screen initialisation
 
-pygame.display.set_caption("soon to be TOWER DEFENSE") # window name
+pygame.display.set_caption("TOWER DEFENSE") # window name
 
 gamemap = GameMap()
 
