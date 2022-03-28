@@ -1,6 +1,11 @@
 import pygame
 import os
 
+# the following imports wouldn't be needed if pyinstaller wasn't used
+import maps.gamemap1
+import maps.gamemap2
+import maps.gamemap3
+
 os.environ["SDL_VIDEO_CENTERED"] = "1"
 
 pygame.init() #pygame initialisation
@@ -26,6 +31,10 @@ while running:
 					print ("Map 1")
 					chosen_map = 1
 					exec(open("tower_defense.py").read(), globals())
+					running = False
+					pygame.quit()
+					sys.exit()
+					break
 				elif x > 300 and x < 400:
 					print ("Map 2")
 					chosen_map = 2

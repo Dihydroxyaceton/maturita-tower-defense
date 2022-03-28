@@ -1,12 +1,13 @@
 import pygame
 import os
 import math
+
 if chosen_map == 1:
-	import gamemap1 as level_file
+	import maps.gamemap1 as level_file
 if chosen_map == 2:
-	import gamemap2 as level_file
+	import maps.gamemap2 as level_file
 if chosen_map == 3:
-	import gamemap3 as level_file
+	import maps.gamemap3 as level_file
 
 """ 
 
@@ -18,20 +19,20 @@ https://www.youtube.com/watch?v=TqbtxBntuF0&t=105s
 
 # defining textures and stats:
 
-grass_texture = pygame.image.load('ground_textures/grass.png')
-road_texture = pygame.image.load('ground_textures/road.png')
-stone_texture = pygame.image.load('ground_textures/stone.png')
+grass_texture = pygame.image.load("ground_textures/grass.png")
+road_texture = pygame.image.load("ground_textures/road.png")
+stone_texture = pygame.image.load("ground_textures/stone.png")
 
-enemy_type1_image = pygame.image.load('enemies/kubelwagen_right.png')
-enemy_type2_image = pygame.image.load('enemies/bf_right.png')
+enemy_type1_image = pygame.image.load("enemies/kubelwagen_right.png")
+enemy_type2_image = pygame.image.load("enemies/bf_right.png")
 
-tower_type1_image = pygame.image.load('towers/tower_1.png')
-tower_type1_image_menu = pygame.image.load('towers/tower_1_menu.png')
-tower_type2_image = pygame.image.load('towers/tower_2.png')
-tower_type2_image_menu = pygame.image.load('towers/tower_2_menu.png')
+tower_type1_image = pygame.image.load("towers/tower_1.png")
+tower_type1_image_menu = pygame.image.load("towers/tower_1_menu.png")
+tower_type2_image = pygame.image.load("towers/tower_2.png")
+tower_type2_image_menu = pygame.image.load("towers/tower_2_menu.png")
 
-bullet_type1_image = pygame.image.load('bullets/bullet_1.png')
-bullet_type2_image = pygame.image.load('bullets/bullet_2.png')
+bullet_type1_image = pygame.image.load("bullets/bullet_1.png")
+bullet_type2_image = pygame.image.load("bullets/bullet_2.png")
 
 
 enemy_type1 = [enemy_type1_image, 100]
