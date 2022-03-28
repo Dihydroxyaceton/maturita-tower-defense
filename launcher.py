@@ -10,7 +10,7 @@ os.environ["SDL_VIDEO_CENTERED"] = "1"
 
 pygame.init() #pygame initialisation
 
-surface = pygame.display.set_mode((800, 600)) # screen initialisation
+surface = pygame.display.set_mode((800, 630)) # screen initialisation
 
 pygame.display.set_caption("TOWER DEFENSE LAUNCHER")
 

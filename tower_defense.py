@@ -2,12 +2,16 @@ import pygame
 import os
 import math
 
+
 if chosen_map == 1:
 	import maps.gamemap1 as level_file
 if chosen_map == 2:
 	import maps.gamemap2 as level_file
 if chosen_map == 3:
 	import maps.gamemap3 as level_file
+
+
+#import maps.gamemap(chosen_map) as level_file # TODO: make work?
 
 """ 
 
@@ -54,10 +58,12 @@ enemy_group = pygame.sprite.Group()
 tower_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
 
-tick_time = 180
-
 wave_list = [(0,0,0), (2,2,0), (2,4,0), (2,4,1), (1,5,3), (0.5,7,7), (0.5,10,10)]
 # tuple structure: (delay between enemies, ground enemies, air enemies)
+
+
+tick_time = 180
+
 
 class GameMap():
 	def __init__(self):
@@ -84,7 +90,7 @@ class GameMap():
 		self.towerchoice_size = 41
 
 		
-	def drawMap(self, surface):  # TODO: structure
+	def drawMap(self, surface):
 		"""draws the map"""
 		self.levelMap=level_file.levelMap
 		
@@ -93,19 +99,20 @@ class GameMap():
 		
 		for x in range(15):
 			for y in range(15):
-				if (self.levelMap[x][y]==1): # empty tiles
-					surface.blit(grass_texture, (y*40, x*40))
-				elif (self.levelMap[x][y]==4): # tiles for placing towers
-					surface.blit(stone_texture, (y*40, x*40))
-				elif (self.levelMap[x][y]==0): # road
+				if (self.levelMap[x][y]==0): # 0 = enemy path
 					surface.blit(road_texture, (y*40, x*40))
+				elif (self.levelMap[x][y]==1): # 1 = empty tiles for 
+					surface.blit(grass_texture, (y*40, x*40))
+				elif (self.levelMap[x][y]==4): # 4 = tiles for placing towers
+					surface.blit(stone_texture, (y*40, x*40))
+
 					
-	def detectDamage(self):		# TODO: add "amount" (damage system - different enemy types)
+	def detectDamage(self):	
 		"""detecting enemy reaching the end of the map, subtracting money thereafter"""
 		for enemy in enemy_group:
 			reachesEnd = enemy.colliderect(self.end_hitbox)
 			if reachesEnd == True:
-				self.getDamage(1)
+				self.getDamage(20)
 	
 	
 	def getDamage(self, amount):
@@ -413,7 +420,7 @@ class Tower(pygame.sprite.Sprite):
 	def findTarget(self, target_x, target_y):
 		self.target_x = target_x
 		self.target_y = target_y
-		if tower.know_target == False:
+		if self.know_target == False:
 			self.know_target = True
 
 
@@ -453,8 +460,8 @@ class Bullet (pygame.sprite.Sprite):
 		self.damage = damage
 		
 		# calculating movement vectors
-		self.vector_x = (self.target_x - self.pos_x) * 0.08
-		self.vector_y = (self.target_y - self.pos_y) * 0.08
+		self.vector_x = (self.target_x - self.pos_x) * 0.09
+		self.vector_y = (self.target_y - self.pos_y) * 0.09
 			
 	def update(self):
 		self.move()
