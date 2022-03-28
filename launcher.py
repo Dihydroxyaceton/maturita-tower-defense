@@ -1,7 +1,7 @@
 import pygame
 import os
 
-# the following imports wouldn't be needed if pyinstaller wasn't used
+# the following imports would not be needed if pyinstaller was not used
 import maps.gamemap1
 import maps.gamemap2
 import maps.gamemap3
@@ -31,10 +31,6 @@ while running:
 					print ("Map 1")
 					chosen_map = 1
 					exec(open("tower_defense.py").read(), globals())
-					running = False
-					pygame.quit()
-					sys.exit()
-					break
 				elif x > 300 and x < 400:
 					print ("Map 2")
 					chosen_map = 2
