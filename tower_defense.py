@@ -388,6 +388,9 @@ class Enemy(pygame.sprite.Sprite):
 	
 
 	def update(self):
+		if self.pos_x >= 570:
+			pygame.sprite.Sprite.kill(self)
+			gamemap.getDamage(20)
 		if self.movement_var == 0:
 			self.findPath()
 		if self.movement_var == 1:
@@ -398,9 +401,6 @@ class Enemy(pygame.sprite.Sprite):
 			self.moveDown()
 		if self.movement_var == 4:
 			self.moveLeft()
-		if self.pos_x >= 570:
-			pygame.sprite.Sprite.kill(self)
-			gamemap.getDamage(1)
 		
 		
 
@@ -423,7 +423,12 @@ class Tower(pygame.sprite.Sprite):
 		if self.know_target == False:
 			self.know_target = True
 
-
+	def update(self):
+		if self.know_target == True:
+			self.shoot(self.target_x, self.target_y)
+		if self.shot_elapsed_time < self.cooldown:
+			self.shot_elapsed_time += 1
+			
 	def shoot(self, target_x, target_y):
 		self.know_target = False
 		if self.shot_elapsed_time >= self.cooldown:	
@@ -433,15 +438,6 @@ class Tower(pygame.sprite.Sprite):
 				bullet = Bullet(self.pos_x, self.pos_y, target_x, target_y, bullet_type2[0], bullet_type2[1], bullet_type2[2])
 			bullet_group.add(bullet)
 			self.shot_elapsed_time = 0
-		
-
-	def update(self):
-		if self.know_target == True:
-			self.shoot(self.target_x, self.target_y)
-		if self.shot_elapsed_time < self.cooldown:
-			self.shot_elapsed_time += 1
-			
-			
 			
 			
 class Bullet (pygame.sprite.Sprite):
