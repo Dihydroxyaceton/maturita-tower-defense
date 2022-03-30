@@ -10,16 +10,11 @@ if chosen_map == 2:
 if chosen_map == 3:
 	import maps.gamemap3 as level_file
 
-
-#import maps.gamemap(chosen_map) as level_file # TODO: make work?
-
 """ 
 
 https://www.youtube.com/watch?v=TqbtxBntuF0&t=105s    
     
 """
-
-
 
 # defining textures and stats:
 
@@ -58,33 +53,32 @@ enemy_group = pygame.sprite.Group()
 tower_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
 
-wave_list = [(0,0,0), (2,2,0), (2,4,0), (2,4,1), (1,5,3), (0.5,7,7), (0.5,10,10)]
-# tuple structure: (delay between enemies, ground enemies, air enemies)
-
+wave_list = [(0,0,0), (2,2,0), (2,4,0), (1.5,5,1), (1,5,3), (0.5,7,7), (0.4,10,10), (0.1,15,12)]
+# first wave (index 0) always stays empty
+# tuple structure: (delay between enemies, enemies type 1, enemies type 2)
 
 tick_time = 180
 
 
 class GameMap():
-	def __init__(self):
+	def __init__(self):	
 		self.current_health = 100	# current health
 		self.maximum_health = 100	# maximum health
 		self.current_money = 60 # money
 		self.health_bar_length = 180
 		self.health_ratio = self.maximum_health / self.health_bar_length # for optimal health bar appearence
-		self.end_hitbox = pygame.Rect(570, 400, 30, 40) # hitbox for obtaining damage
 		self.placing_tower = 0
 		self.passed_ticks = 0
 		self.wave_pause = 0
 		self.spawned_enemies = 0
 		self.do_spawn = False
+		self.game_end = 0 # 0 for game underway, 1 for win, 2 for loss
 		self.current_wave = 0
 		self.spawned_enemies_type1 = 0
 		self.spawned_enemies_type2 = 0
 		self.status_text = "Welcome to Tower defense. Place towers to eliminate enemies. Waves starting automatically."
 		
-		# link the following to specific tower type attributes
-		self.towerchoice_type1_x = 639 # -1 to compensate for click (click is perceived as directly on edge, wouldnt work without)
+		self.towerchoice_type1_x = 639 # 1 subtracted from true coordinate to compensate (click is perceived as directly on edge, wouldnt work without)
 		self.towerchoice_type2_x = 719
 		self.towerchoice_y = 119
 		self.towerchoice_size = 41
@@ -99,9 +93,9 @@ class GameMap():
 		
 		for x in range(15):
 			for y in range(15):
-				if (self.levelMap[x][y]==0): # 0 = enemy path
+				if (self.levelMap[x][y]==0): # 0 = road, path for enemies
 					surface.blit(road_texture, (y*40, x*40))
-				elif (self.levelMap[x][y]==1): # 1 = empty tiles for 
+				elif (self.levelMap[x][y]==1): # 1 = empty tiles
 					surface.blit(grass_texture, (y*40, x*40))
 				elif (self.levelMap[x][y]==4): # 4 = tiles for placing towers
 					surface.blit(stone_texture, (y*40, x*40))
@@ -120,8 +114,10 @@ class GameMap():
 		if self.current_health > 0: # protection against HP under 0
 			self.current_health -= amount
 		if self.current_health <=0:
-			self.current_health = 0 # TODO: end of game
-	
+			self.current_health = 0
+			self.status_text = "GAME OVER. To exit, close the window."
+			self.game_end = 2
+
 	def getMoney(self, amount):
 		"""adding money"""
 		self.current_money += amount
@@ -144,7 +140,7 @@ class GameMap():
 		surface.blit(self.current_money_label, (20, 608))
 
 	def healthBar(self):	
-		"""health bar of the 'castle': damaged when an enemy reaches the end of the map"""
+		"""player's health bar: damaged when an enemy reaches the end of the map"""
 		pygame.draw.rect(surface, (255, 0, 0), (610, 50, self.current_health/self.health_ratio, 25))
 		pygame.draw.rect(surface, (0, 0, 0), (610, 50, self.health_bar_length, 25), 4)
 		font = pygame.font.SysFont("calibri", 20)
@@ -219,61 +215,63 @@ class GameMap():
 				self.status_text = "Tower upgraded."
 				self.spendMoney(tower_type2[4])
 				tower = Tower(pos_x + 20, pos_y + 20, tower_type2[0], tower_type2[1], tower_type2[2])
+				self.levelMap[math.floor(mouse_y / 40)][math.floor(mouse_x / 40)] = 92 # marks the grid field as occupied by tower type 2
 				tower_group.add(tower)
 
 	def enemySpawn(self): # spawn
-			if self.current_wave < len(wave_list):
-				self.spawn_delay = (wave_list[self.current_wave][0]) * tick_time
-				self.enemies_type1_count = wave_list[self.current_wave][1]
-				self.enemies_type2_count = wave_list[self.current_wave][2]
-			else:
-				if len(enemy_group) == 0:	# checks for emptied list of enemies after last wave
-					self.status_text = "Game over! Thank you for playing Tower defense."
-					self.do_spawn = False
-					self.passed_ticks = 0
-					running = False
-			if self.passed_ticks >= self.spawn_delay:
-				if self.do_spawn == True:
-					self.passed_ticks = 0
-					if self.spawned_enemies_type1 < self.enemies_type1_count:		
-						enemy = Enemy(20, 100, enemy_type1[0], enemy_type1[1])
-						enemy_group.add(enemy)
-						self.spawned_enemies_type1 += 1
-					else:
-						if self.spawned_enemies_type2 < self.enemies_type2_count:
-							enemy = Enemy(20, 100, enemy_type2[0], enemy_type2[1])
-							enemy_group.add(enemy)
-							self.spawned_enemies_type2 += 1
-						else:
-							self.do_spawn = False
-							self.spawned_ground_enemies = 0
-							self.spawned_air_enemies = 0
-							self.status_text = "End of wave "+str(self.current_wave)+". Next wave in 5 seconds." # TODO: 5 seconds -> variable time
+		if self.current_wave < len(wave_list):
+			self.spawn_delay = (wave_list[self.current_wave][0]) * tick_time
+			self.enemies_type1_count = wave_list[self.current_wave][1]
+			self.enemies_type2_count = wave_list[self.current_wave][2]
+		else:
+			self.game_end = 1
+			self.passed_ticks = 0 # protection against spawning next enemies (grounds spawn interval at 0)				
+				
+		if self.passed_ticks >= self.spawn_delay:
+			if self.do_spawn == True:
+				self.passed_ticks = 0
+				if self.spawned_enemies_type1 < self.enemies_type1_count:		
+					enemy = Enemy(20, 100, enemy_type1[0], enemy_type1[1])
+					enemy_group.add(enemy)
+					self.spawned_enemies_type1 += 1
 				else:
-					if self.wave_pause >= 900:
-						self.wave_pause = 0
-						self.do_spawn = True
-						self.current_wave += 1
-						self.status_text = "Starting wave " +str(self.current_wave)+"."
+					if self.spawned_enemies_type2 < self.enemies_type2_count:
+						enemy = Enemy(20, 100, enemy_type2[0], enemy_type2[1])
+						enemy_group.add(enemy)
+						self.spawned_enemies_type2 += 1
 					else:
-						self.wave_pause += 1
+						self.do_spawn = False
+						self.spawned_enemies_type1 = 0
+						self.spawned_enemies_type2 = 0
+						self.status_text = "End of wave "+str(self.current_wave)+"."
 			else:
-				self.passed_ticks += 1
-		
-		
-	
+				if self.wave_pause >= 900 and self.game_end == 0:
+					self.wave_pause = 0
+					self.do_spawn = True
+					self.current_wave += 1
+					self.status_text = "Starting wave " +str(self.current_wave)+"."
+				else:
+					self.wave_pause += 1
+		else:
+			self.passed_ticks += 1
+			
 	def update(self):
 		self.moneyIndicator()
 		self.statusBar()
 		self.healthBar()
 		self.towerChoice()
-		self.enemySpawn()
-		#self.showDeveloperStuff()
-
-
-
-
-
+		if self.game_end == 0:
+			self.enemySpawn()
+			
+		elif self.game_end == 1:
+			if len(enemy_group) == 0:	# checks for emptied list of enemies after last wave
+				self.status_text = "GAME OVER. To exit, close the window."
+				font = pygame.font.SysFont("calibri", 100)
+				surface.blit(font.render("You won!", 1, (0,255,0)), (150, 100))
+				
+		elif self.game_end == 2:
+			font = pygame.font.SysFont("calibri", 100)
+			surface.blit(font.render("You lost!", 1, (255,0,0)), (150, 100))				
 
 	def checkGridField(self, mouse_x, mouse_y):
 		"""checks clicked field in grid; finds the value in gamemap (numbers = grid coordinates)"""
@@ -281,13 +279,6 @@ class GameMap():
 		self.grid_field_y = math.floor(mouse_y / 40)
 		self.grid_value = (self.levelMap[self.grid_field_y][self.grid_field_x])
 		return self.grid_value
-	
-	def editGridField(self, x, y, amount):
-		print(self.levelMap)
-	
-	def showDeveloperStuff(self):
-		pygame.draw.rect(surface, (255, 154, 0), self.end_hitbox) #HITBOX END
-
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -487,8 +478,7 @@ pygame.display.set_caption("TOWER DEFENSE") # window name
 gamemap = GameMap()
 
 clock = pygame.time.Clock()
-
-running = True  
+ 
 
 while running:
 	for event in pygame.event.get():
@@ -516,15 +506,21 @@ while running:
 	
 	gamemap.drawMap(surface)
 	gamemap.update()
-	
-	enemy_group.draw(surface)
-	enemy_group.update()
-	
+		
 	tower_group.draw(surface)
 	tower_group.update()
 	
 	bullet_group.draw(surface)
 	bullet_group.update()
+	
+	enemy_group.draw(surface)
+	enemy_group.update()
+	""" 
+	order of classes in code is gamemap-enemy-tower-bullet
+	order of updates here in main loop is altered
+	tower textures would overlap "You won/lost!" text (created by enemy class) if code class order was maintained
+	"""
+	
 	
 	pygame.display.update()
 
