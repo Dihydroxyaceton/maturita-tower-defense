@@ -8,7 +8,7 @@ import maps.gamemap2
 import maps.gamemap3
 """
 imported maps not used directly in launcher file
-necessary to include here so that Pyinstaller detects them as dependencies
+necessary to include here so that Pyinstaller detects them as dependencies to succesfully create an exe file
 """
 
 os.environ["SDL_VIDEO_CENTERED"] = "1"
@@ -32,21 +32,21 @@ while running:
 			x, y = pygame.mouse.get_pos()
 			if y > 530 and y < 630: # checking coordinates of mouse click event
 				if x > 100 and x < 200: 
-					print ("Map 1")
+					print ("Map 1 selected")
 					chosen_map = 1
 					exec(open("tower_defense.py").read(), globals()) # opening main tower defense file, sending global variables (chosen_map)
 					pygame.display.quit()
 					pygame.quit()
 					sys.exit() # exit the launcher
 				elif x > 300 and x < 400:
-					print ("Map 2")
+					print ("Map 2 selected")
 					chosen_map = 2
 					exec(open("tower_defense.py").read(), globals())
 					pygame.display.quit()
 					pygame.quit()
 					sys.exit()
 				elif x > 500 and x < 600:
-					print ("Map 3")
+					print ("Map 3 selected")
 					chosen_map = 3
 					exec(open("tower_defense.py").read(), globals())
 					pygame.display.quit()
