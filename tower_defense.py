@@ -11,9 +11,9 @@ if chosen_map == 3:
 	import maps.gamemap3 as level_file
 
 """ 
-
-https://www.youtube.com/watch?v=TqbtxBntuF0&t=105s    
-    
+inspiration for the beginning taken from: 
+https://www.youtube.com/watch?v=TqbtxBntuF0
+see provided documentation for further reference 
 """
 
 # defining textures and stats:
@@ -138,7 +138,8 @@ class GameMap():
 
 	def healthBar(self):	
 		"""displaying player's health bar (damaged when an enemy reaches the end of the map)
-		inspired by: https://www.youtube.com/watch?v=pUEZbUAMZYA"""
+		inspired by: https://www.youtube.com/watch?v=pUEZbUAMZYA
+		see provided documentation for further reference"""
 		pygame.draw.rect(surface, (255, 0, 0), (610, 50, self.current_health/self.health_bar_ratio, 25))
 		pygame.draw.rect(surface, (0, 0, 0), (610, 50, self.health_bar_length, 25), 4)
 		font = pygame.font.SysFont("calibri", 20)
@@ -547,7 +548,7 @@ while running:
 				# enemy collision with a bullet detected
 				enemy.getHit(bullet.damage)
 
-	surface.fill((255, 255, 255))
+	surface.fill((255, 255, 255)) # white background
 		
 	gamemap.drawMap(surface)
 	gamemap.update()
